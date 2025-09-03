@@ -1,4 +1,4 @@
-# Open Soup Rating: Open-Source Valorant Rating System
+# Open Soup Rating (OSR): Open-Source Valorant Rating System
 
 <p align="center">
   <a href="https://github.com/zachleolewis/OpenSoupRating/blob/main/LICENSE.md">
