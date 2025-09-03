@@ -36,7 +36,7 @@
 
 Open Soup Rating is an open-source implementation of a Valorant rating system inspired by Riot's VLR (Valorant Leaderboard Rating). It calculates player ratings based on match performance, considering factors like kills, deaths, assists, damage, economic advantages, and situational impacts (XvX scenarios).
 
-The system breaks down player performance into components and combines them using fixed weights to calculate ratings that align with official VLR scores.
+The system breaks down player performance into components and combines them using fixed weights to calculate ratings.
 
 
 ## Data Requirements

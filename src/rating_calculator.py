@@ -8,7 +8,7 @@ from adra import calculate_adra
 
 def calculate_components(matches: List[Dict], economic_data: Dict, xvx_data: Dict, damage_data: Dict) -> List[Dict]:
     # Calculate the components for each player in each match.
-    # Returns list of dicts with puuid, matchId, KillContrib, DeathContrib, APR, ADRa, target
+    # Returns list of dicts with puuid, matchId, KillContrib, DeathContrib, APR, ADRa
     components = []
     for match in matches:
         match_id = match['matchInfo']['matchId']
@@ -95,8 +95,6 @@ def calculate_components(matches: List[Dict], economic_data: Dict, xvx_data: Dic
             kill_contrib = player_contribs[puuid]['kill']
             death_contrib = player_contribs[puuid]['death']
             
-            target = stats['vlrRating2']
-            
             components.append({
                 'puuid': puuid,
                 'matchId': match_id,
@@ -104,7 +102,6 @@ def calculate_components(matches: List[Dict], economic_data: Dict, xvx_data: Dic
                 'DeathContrib': death_contrib,
                 'APR': apr,
                 'ADRa': adra,
-                'target': target,
                 'kills': kills,
                 'deaths': deaths,
                 'assists': assists
