@@ -1,0 +1,373 @@
+{
+  "metadata": {
+    "generated_at": "20250903_155216",
+    "description": "Loadout cost analysis data - Economy categories and economic advantages",
+    "total_rounds": 90613,
+    "total_kills": 652670,
+    "economic_kills": 652670,
+    "data_structure": {
+      "economy_categories": "Valorant economy category performance data",
+      "economic_advantages": "Economic advantage vs success rate data",
+      "economy_category_definitions": "Definitions of what each economy category represents in terms of credit ranges"
+    }
+  },
+  "economy_category_definitions": {
+    "Save Round": [
+      0,
+      800
+    ],
+    "Eco Round": [
+      801,
+      1600
+    ],
+    "Force Buy": [
+      1601,
+      2500
+    ],
+    "Anti-Eco": [
+      2501,
+      3500
+    ],
+    "Full Buy": [
+      3501,
+      4500
+    ],
+    "Operator Buy": [
+      4501,
+      null
+    ]
+  },
+  "economy_categories": {
+    "Eco Round vs Save Round": {
+      "win_rate": 0.5189017660044151,
+      "total_engagements": 14496,
+      "wins": 7522,
+      "losses": 6974
+    },
+    "Save Round vs Eco Round": {
+      "win_rate": 0.481098233995585,
+      "total_engagements": 14496,
+      "wins": 6974,
+      "losses": 7522
+    },
+    "Save Round vs Save Round": {
+      "win_rate": 0.5,
+      "total_engagements": 32416,
+      "wins": 16208,
+      "losses": 16208
+    },
+    "Eco Round vs Eco Round": {
+      "win_rate": 0.5,
+      "total_engagements": 8126,
+      "wins": 4063,
+      "losses": 4063
+    },
+    "Unknown vs Save Round": {
+      "win_rate": 0.5366107233031339,
+      "total_engagements": 20199,
+      "wins": 10839,
+      "losses": 9360
+    },
+    "Save Round vs Unknown": {
+      "win_rate": 0.4633892766968662,
+      "total_engagements": 20199,
+      "wins": 9360,
+      "losses": 10839
+    },
+    "Unknown vs Unknown": {
+      "win_rate": 0.5,
+      "total_engagements": 18206,
+      "wins": 9103,
+      "losses": 9103
+    },
+    "Eco Round vs Full Buy": {
+      "win_rate": 0.36083454245259416,
+      "total_engagements": 19987,
+      "wins": 7212,
+      "losses": 12775
+    },
+    "Full Buy vs Eco Round": {
+      "win_rate": 0.6391654575474058,
+      "total_engagements": 19987,
+      "wins": 12775,
+      "losses": 7212
+    },
+    "Eco Round vs Anti-Eco": {
+      "win_rate": 0.3640035340148933,
+      "total_engagements": 7923,
+      "wins": 2884,
+      "losses": 5039
+    },
+    "Anti-Eco vs Eco Round": {
+      "win_rate": 0.6359964659851066,
+      "total_engagements": 7923,
+      "wins": 5039,
+      "losses": 2884
+    },
+    "Anti-Eco vs Save Round": {
+      "win_rate": 0.7341090656477943,
+      "total_engagements": 11516,
+      "wins": 8454,
+      "losses": 3062
+    },
+    "Save Round vs Anti-Eco": {
+      "win_rate": 0.2658909343522056,
+      "total_engagements": 11516,
+      "wins": 3062,
+      "losses": 8454
+    },
+    "Anti-Eco vs Unknown": {
+      "win_rate": 0.52598255883407,
+      "total_engagements": 8371,
+      "wins": 4403,
+      "losses": 3968
+    },
+    "Unknown vs Anti-Eco": {
+      "win_rate": 0.47401744116593,
+      "total_engagements": 8371,
+      "wins": 3968,
+      "losses": 4403
+    },
+    "Operator Buy vs Unknown": {
+      "win_rate": 0.5368290998946182,
+      "total_engagements": 27519,
+      "wins": 14773,
+      "losses": 12746
+    },
+    "Unknown vs Operator Buy": {
+      "win_rate": 0.46317090010538176,
+      "total_engagements": 27519,
+      "wins": 12746,
+      "losses": 14773
+    },
+    "Operator Buy vs Anti-Eco": {
+      "win_rate": 0.5691940396805796,
+      "total_engagements": 36441,
+      "wins": 20742,
+      "losses": 15699
+    },
+    "Anti-Eco vs Operator Buy": {
+      "win_rate": 0.4308059603194204,
+      "total_engagements": 36441,
+      "wins": 15699,
+      "losses": 20742
+    },
+    "Operator Buy vs Force Buy": {
+      "win_rate": 0.6236847802554666,
+      "total_engagements": 46190,
+      "wins": 28808,
+      "losses": 17382
+    },
+    "Force Buy vs Operator Buy": {
+      "win_rate": 0.37631521974453347,
+      "total_engagements": 46190,
+      "wins": 17382,
+      "losses": 28808
+    },
+    "Full Buy vs Force Buy": {
+      "win_rate": 0.6143308372076516,
+      "total_engagements": 28177,
+      "wins": 17310,
+      "losses": 10867
+    },
+    "Force Buy vs Full Buy": {
+      "win_rate": 0.38566916279234836,
+      "total_engagements": 28177,
+      "wins": 10867,
+      "losses": 17310
+    },
+    "Anti-Eco vs Full Buy": {
+      "win_rate": 0.4474656188605108,
+      "total_engagements": 25450,
+      "wins": 11388,
+      "losses": 14062
+    },
+    "Full Buy vs Anti-Eco": {
+      "win_rate": 0.5525343811394892,
+      "total_engagements": 25450,
+      "wins": 14062,
+      "losses": 11388
+    },
+    "Operator Buy vs Full Buy": {
+      "win_rate": 0.5163601917667561,
+      "total_engagements": 138293,
+      "wins": 71409,
+      "losses": 66884
+    },
+    "Full Buy vs Operator Buy": {
+      "win_rate": 0.48363980823324393,
+      "total_engagements": 138293,
+      "wins": 66884,
+      "losses": 71409
+    },
+    "Full Buy vs Full Buy": {
+      "win_rate": 0.5,
+      "total_engagements": 110370,
+      "wins": 55185,
+      "losses": 55185
+    },
+    "Full Buy vs Unknown": {
+      "win_rate": 0.5378884544144886,
+      "total_engagements": 24295,
+      "wins": 13068,
+      "losses": 11227
+    },
+    "Unknown vs Full Buy": {
+      "win_rate": 0.46211154558551143,
+      "total_engagements": 24295,
+      "wins": 11227,
+      "losses": 13068
+    },
+    "Force Buy vs Unknown": {
+      "win_rate": 0.4228460165503813,
+      "total_engagements": 6163,
+      "wins": 2606,
+      "losses": 3557
+    },
+    "Unknown vs Force Buy": {
+      "win_rate": 0.5771539834496187,
+      "total_engagements": 6163,
+      "wins": 3557,
+      "losses": 2606
+    },
+    "Operator Buy vs Eco Round": {
+      "win_rate": 0.6342229199372057,
+      "total_engagements": 23569,
+      "wins": 14948,
+      "losses": 8621
+    },
+    "Eco Round vs Operator Buy": {
+      "win_rate": 0.36577708006279436,
+      "total_engagements": 23569,
+      "wins": 8621,
+      "losses": 14948
+    },
+    "Operator Buy vs Operator Buy": {
+      "win_rate": 0.5,
+      "total_engagements": 168294,
+      "wins": 84147,
+      "losses": 84147
+    },
+    "Unknown vs Eco Round": {
+      "win_rate": 0.5491454772822009,
+      "total_engagements": 11995,
+      "wins": 6587,
+      "losses": 5408
+    },
+    "Eco Round vs Unknown": {
+      "win_rate": 0.4508545227177991,
+      "total_engagements": 11995,
+      "wins": 5408,
+      "losses": 6587
+    },
+    "Eco Round vs Force Buy": {
+      "win_rate": 0.43453815261044176,
+      "total_engagements": 2490,
+      "wins": 1082,
+      "losses": 1408
+    },
+    "Force Buy vs Eco Round": {
+      "win_rate": 0.5654618473895582,
+      "total_engagements": 2490,
+      "wins": 1408,
+      "losses": 1082
+    },
+    "Anti-Eco vs Anti-Eco": {
+      "win_rate": 0.5,
+      "total_engagements": 4900,
+      "wins": 2450,
+      "losses": 2450
+    },
+    "Force Buy vs Anti-Eco": {
+      "win_rate": 0.43039879608728365,
+      "total_engagements": 5316,
+      "wins": 2288,
+      "losses": 3028
+    },
+    "Anti-Eco vs Force Buy": {
+      "win_rate": 0.5696012039127163,
+      "total_engagements": 5316,
+      "wins": 3028,
+      "losses": 2288
+    },
+    "Force Buy vs Force Buy": {
+      "win_rate": 0.5,
+      "total_engagements": 2770,
+      "wins": 1385,
+      "losses": 1385
+    },
+    "Full Buy vs Save Round": {
+      "win_rate": 0.735358408080199,
+      "total_engagements": 13267,
+      "wins": 9756,
+      "losses": 3511
+    },
+    "Save Round vs Full Buy": {
+      "win_rate": 0.264641591919801,
+      "total_engagements": 13267,
+      "wins": 3511,
+      "losses": 9756
+    },
+    "Save Round vs Operator Buy": {
+      "win_rate": 0.2598731328013096,
+      "total_engagements": 4887,
+      "wins": 1270,
+      "losses": 3617
+    },
+    "Operator Buy vs Save Round": {
+      "win_rate": 0.7401268671986904,
+      "total_engagements": 4887,
+      "wins": 3617,
+      "losses": 1270
+    },
+    "Force Buy vs Save Round": {
+      "win_rate": 0.6652719665271967,
+      "total_engagements": 3585,
+      "wins": 2385,
+      "losses": 1200
+    },
+    "Save Round vs Force Buy": {
+      "win_rate": 0.33472803347280333,
+      "total_engagements": 3585,
+      "wins": 1200,
+      "losses": 2385
+    }
+  },
+  "economic_advantages": {
+    "Significant Advantage (2x+ cost)": {
+      "win_rate": 0.6486896130484453,
+      "total_engagements": 176818,
+      "total_kills": 114700
+    },
+    "Moderate Advantage (1.5-2x cost)": {
+      "win_rate": 0.5740112089671737,
+      "total_engagements": 62450,
+      "total_kills": 35847
+    },
+    "Slight Advantage (1.2-1.5x cost)": {
+      "win_rate": 0.5355704697986577,
+      "total_engagements": 119200,
+      "total_kills": 63840
+    },
+    "Equal Footing (0.8-1.2x cost)": {
+      "win_rate": 0.49862960831000286,
+      "total_engagements": 611504,
+      "total_kills": 304914
+    },
+    "Slight Disadvantage (0.67-0.8x cost)": {
+      "win_rate": 0.460765937753095,
+      "total_engagements": 86430,
+      "total_kills": 39824
+    },
+    "Moderate Disadvantage (0.5-0.67x cost)": {
+      "win_rate": 0.4253370412913367,
+      "total_engagements": 66164,
+      "total_kills": 28142
+    },
+    "Significant Disadvantage (<0.5x cost)": {
+      "win_rate": 0.3500046180844186,
+      "total_engagements": 173232,
+      "total_kills": 60632
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "KillContrib": {
+    "mean": 2.916,
+    "std": 3.613773
+  },
+  "DeathContrib": {
+    "mean": -2.916,
+    "std": 2.128872
+  },
+  "APR": {
+    "mean": 0.281847,
+    "std": 0.517299
+  },
+  "ADRa": {
+    "mean": 66.120653,
+    "std": 69.759798
+  },
+  "final_rating": {
+    "mean": 1.0353714155416436,
+    "std": 0.08979020976963815,
+    "base_rating": 1.0,
+    "scaling_factor": 0.56
+  }
+}
