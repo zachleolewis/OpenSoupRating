@@ -150,7 +150,7 @@ This ensures that:
 ## Installation
 
 ### Requirements
-- Python 3.8+
+- Python 3.9+
 - JSON match data from Riot Games API
 
 ### Quick Installation (Recommended)
