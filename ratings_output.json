@@ -1,0 +1,1702 @@
+{
+  "XpmiD47h90uK5qZrZu-4sEDu7bkc2IeG4_rWLPnd42agCQMbciA3vRq0gmBzsZTue7130xR8UcwtEQ_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": -1.6357124454353102,
+    "player_info": {
+      "name": "QOR toozy",
+      "tagline": "epval",
+      "kills": 11,
+      "deaths": 19,
+      "assists": 11,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 2.2664071555611915,
+      "DeathContrib": -4.00595581062328,
+      "APR": 0.4782608695652174,
+      "ADRa": 56.95652173913044
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.2406831661897535,
+      "DeathContrib_norm": -0.2406831661897535,
+      "APR_norm": 0.37969118356157155,
+      "ADRa_norm": -0.13136694089724238
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.10384140351867745,
+      "DeathContrib_weighted": -0.10384140351867745,
+      "APR_weighted": 0.019753843916295918,
+      "ADRa_weighted": -0.011177372694656637
+    },
+    "weighted_sum": -0.1991063358157156,
+    "pre_normalized_rating": 0.8885004519431993,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "cTCPPo26mXW1e8r-KAXlC8eX1D0RgR2ftPJ6kBDWRSHDYt_PupfdTZ_3qtWrEluxB_GnwivOValX9w_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": -0.5179003095995052,
+    "player_info": {
+      "name": "TSM seven",
+      "tagline": "epval",
+      "kills": 18,
+      "deaths": 17,
+      "assists": 11,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 3.4538570640272437,
+      "DeathContrib": -3.597570802841602,
+      "APR": 0.4782608695652174,
+      "ADRa": 47.69565217391305
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.019884167989295137,
+      "DeathContrib_norm": -0.019884167989295137,
+      "APR_norm": 0.37969118356157155,
+      "ADRa_norm": -0.26412061609018644
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.008578912869135546,
+      "DeathContrib_weighted": -0.008578912869135546,
+      "APR_weighted": 0.019753843916295918,
+      "ADRa_weighted": -0.022472735851340127
+    },
+    "weighted_sum": -0.0198767176733153,
+    "pre_normalized_rating": 0.9888690381029435,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "OI7ZGF1yTFU7xiJjgc22Q-psXGbNIKbrLBtTtEcHBbRSmQlgI-AbiiJZm78riEFNYs0Cd4ECbmt8bw_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": 1.6357793030395211,
+    "player_info": {
+      "name": "TSM gMd",
+      "tagline": "epval",
+      "kills": 22,
+      "deaths": 14,
+      "assists": 8,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 4.9706733467364055,
+      "DeathContrib": -2.235592654824587,
+      "APR": 0.34782608695652173,
+      "ADRa": 59.78260869565217
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.37842452914333835,
+      "DeathContrib_norm": 0.37842452914333835,
+      "APR_norm": 0.12754535956288668,
+      "ADRa_norm": -0.09085525597920785
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.16326914280809326,
+      "DeathContrib_weighted": 0.16326914280809326,
+      "APR_weighted": 0.006635685088654514,
+      "ADRa_weighted": -0.00773043088627905
+    },
+    "weighted_sum": 0.325443539818562,
+    "pre_normalized_rating": 1.1822483822983947,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "Vf77olgXDg1WBHtdrnR7c9I6F5TQsoPwGL-vV3Uez_zIAzNpkppiDAEtweChe0CnSOtoQ3IvvdZhRw_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": 0.5651075279664861,
+    "player_info": {
+      "name": "QOR Logan1",
+      "tagline": "epval",
+      "kills": 16,
+      "deaths": 15,
+      "assists": 5,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 3.9079233110957765,
+      "DeathContrib": -2.4835576003564155,
+      "APR": 0.21739130434782608,
+      "ADRa": 58.08695652173913
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.19707459637605365,
+      "DeathContrib_norm": 0.19707459637605365,
+      "APR_norm": -0.12460046443579813,
+      "ADRa_norm": -0.11516226693002854
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.08502673040885692,
+      "DeathContrib_weighted": 0.08502673040885692,
+      "APR_weighted": -0.0064824737389868855,
+      "ADRa_weighted": -0.009798595971305599
+    },
+    "weighted_sum": 0.15377239110742136,
+    "pre_normalized_rating": 1.086112539020156,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "BoMhMN_zU424iSKWGphS-p2eEshEw2ZWb4JGHNBZclHuyD6jyYBXtQyXyoOMTy_TzlM9Oxh-yr2KaA_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": -0.2204475533700573,
+    "player_info": {
+      "name": "QOR Alym",
+      "tagline": "epval",
+      "kills": 22,
+      "deaths": 18,
+      "assists": 1,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 3.7672416767897077,
+      "DeathContrib": -3.099022532489115,
+      "APR": 0.043478260869565216,
+      "ADRa": 43.17391304347826
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.09245449898217077,
+      "DeathContrib_norm": 0.09245449898217077,
+      "APR_norm": -0.4607948964340446,
+      "ADRa_norm": -0.32893931195904186
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.039888975568634806,
+      "DeathContrib_weighted": 0.039888975568634806,
+      "APR_weighted": -0.023973352175842087,
+      "ADRa_weighted": -0.02798784274474428
+    },
+    "weighted_sum": 0.027816756216683246,
+    "pre_normalized_rating": 1.0155773834813426,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "swDtN25J7GSjiF6EPvlEBE23P2P4MZSgaqFKVDLepZ6u_ksLR_jX_KFeuHd19EpdJRGeEIZ1uJ2FmA_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": -0.3657249065536951,
+    "player_info": {
+      "name": "TSM vora",
+      "tagline": "epval",
+      "kills": 9,
+      "deaths": 14,
+      "assists": 8,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 2.3876623166584077,
+      "DeathContrib": -2.0838732160147675,
+      "APR": 0.34782608695652173,
+      "ADRa": 34.65217391304348
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.04203212274866741,
+      "DeathContrib_norm": 0.04203212274866741,
+      "APR_norm": 0.12754535956288668,
+      "ADRa_norm": -0.4510976234041923
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.01813452385635423,
+      "DeathContrib_weighted": 0.01813452385635423,
+      "APR_weighted": 0.006635685088654514,
+      "ADRa_weighted": -0.038381698043852094
+    },
+    "weighted_sum": 0.00452303475751088,
+    "pre_normalized_rating": 1.002532899464206,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "yqss8O2X6Q3KW24kV7nm8OtzpKRFynr58FeGwsIHHUPncJP77EhIGyRauu46xZgiEh6K81oiemmY1A_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": 0.179743113149504,
+    "player_info": {
+      "name": "QOR nerve",
+      "tagline": "epval",
+      "kills": 15,
+      "deaths": 15,
+      "assists": 14,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 2.82282331550838,
+      "DeathContrib": -2.6191891402788436,
+      "APR": 0.6086956521739131,
+      "ADRa": 94.65217391304348
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.02817473250665389,
+      "DeathContrib_norm": 0.02817473250665389,
+      "APR_norm": 0.6318370075602564,
+      "ADRa_norm": 0.4089966102402343
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.01215583047859539,
+      "DeathContrib_weighted": 0.01215583047859539,
+      "APR_weighted": 0.03287200274393732,
+      "ADRa_weighted": 0.034799528041702936
+    },
+    "weighted_sum": 0.09198319174283104,
+    "pre_normalized_rating": 1.0515105873759854,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "ZInVzr5HvH66xON4FnxiV32yQd741M39-LbWLpJO1YnjcOoQZcZm0kDGkZLnXVcY3q3QIMK6P8PnBQ_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": -0.0178203656686498,
+    "player_info": {
+      "name": "QOR Dark3st",
+      "tagline": "epval",
+      "kills": 15,
+      "deaths": 18,
+      "assists": 7,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 3.4488972164144105,
+      "DeathContrib": -2.7571757625090343,
+      "APR": 0.30434782608695654,
+      "ADRa": 46.0
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.09570626792349383,
+      "DeathContrib_norm": 0.09570626792349383,
+      "APR_norm": 0.04349675156332514,
+      "ADRa_norm": -0.2884276270410073
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.041291933058894906,
+      "DeathContrib_weighted": 0.041291933058894906,
+      "APR_weighted": 0.0022629654794407176,
+      "ADRa_weighted": -0.024540900936366686
+    },
+    "weighted_sum": 0.06030593066086384,
+    "pre_normalized_rating": 1.0337713211700839,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "nrHCagF9N5GKNqpB8x4c90bDhPmh6z4ro2s3ixKmrtWzp5RNWqVwLe29IGN23Cuq6VNlFFHU47rhKg_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": 0.5859790200254898,
+    "player_info": {
+      "name": "TSM Timotino",
+      "tagline": "epval",
+      "kills": 19,
+      "deaths": 18,
+      "assists": 6,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 4.026007080166389,
+      "DeathContrib": -2.7354948148860783,
+      "APR": 0.2608695652173913,
+      "ADRa": 70.34782608695652
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.17855469412167155,
+      "DeathContrib_norm": 0.17855469412167155,
+      "APR_norm": -0.04055185643623652,
+      "ADRa_norm": 0.060596119945136764
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.0770364223471474,
+      "DeathContrib_weighted": 0.0770364223471474,
+      "APR_weighted": -0.0021097541297730856,
+      "ADRa_weighted": 0.005155828489655634
+    },
+    "weighted_sum": 0.15711891905417735,
+    "pre_normalized_rating": 1.0879865946703393,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "b85NoHBgWomQHJXCuJTwD56fuIdhh1OJOgzRKh_lC6USKsbWdV5bVXMLjnL0NBlk3hKe7H2KzVa3cw_0cd706ae-3341-4704-88f3-b3129f98acea": {
+    "rating": 0.08534730089629247,
+    "player_info": {
+      "name": "TSM alvinboy",
+      "tagline": "epval",
+      "kills": 17,
+      "deaths": 16,
+      "assists": 6,
+      "rounds_played": 23
+    },
+    "components": {
+      "KillContrib": 3.353689690437368,
+      "DeathContrib": -3.0060314882108266,
+      "APR": 0.2608695652173913,
+      "ADRa": 96.82608695652173
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.04810183182874814,
+      "DeathContrib_norm": 0.04810183182874814,
+      "APR_norm": -0.04055185643623652,
+      "ADRa_norm": 0.44015944479256847
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.020753265830725332,
+      "DeathContrib_weighted": 0.020753265830725332,
+      "APR_weighted": -0.0021097541297730856,
+      "ADRa_weighted": 0.037451021740454914
+    },
+    "weighted_sum": 0.07684779927213249,
+    "pre_normalized_rating": 1.043034767592394,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "0cd706ae-3341-4704-88f3-b3129f98acea"
+  },
+  "OI7ZGF1yTFU7xiJjgc22Q-psXGbNIKbrLBtTtEcHBbRSmQlgI-AbiiJZm78riEFNYs0Cd4ECbmt8bw_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": 0.5562872747298444,
+    "player_info": {
+      "name": "TSM gMd",
+      "tagline": "epval",
+      "kills": 23,
+      "deaths": 24,
+      "assists": 9,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 4.711641934271243,
+      "DeathContrib": -3.564011455101913,
+      "APR": 0.28125,
+      "ADRa": 78.75
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.15878563473263677,
+      "DeathContrib_norm": 0.15878563473263677,
+      "APR_norm": -0.001154071436442008,
+      "ADRa_norm": 0.1810404754899089
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.06850717243864735,
+      "DeathContrib_weighted": 0.06850717243864735,
+      "APR_weighted": -6.0041812954116124e-05,
+      "ADRa_weighted": 0.015403851635332096
+    },
+    "weighted_sum": 0.15235815469967268,
+    "pre_normalized_rating": 1.0853205666318166,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "ZInVzr5HvH66xON4FnxiV32yQd741M39-LbWLpJO1YnjcOoQZcZm0kDGkZLnXVcY3q3QIMK6P8PnBQ_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": -1.326800521118263,
+    "player_info": {
+      "name": "QOR Dark3st",
+      "tagline": "epval",
+      "kills": 22,
+      "deaths": 25,
+      "assists": 9,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 3.600811862504204,
+      "DeathContrib": -4.711128525099507,
+      "APR": 0.28125,
+      "ADRa": 52.21875
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.15362291192547284,
+      "DeathContrib_norm": -0.15362291192547284,
+      "APR_norm": -0.001154071436442008,
+      "ADRa_norm": -0.19928244344973595
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.06627974460993444,
+      "DeathContrib_weighted": -0.06627974460993444,
+      "APR_weighted": -6.0041812954116124e-05,
+      "ADRa_weighted": -0.016955971774374263
+    },
+    "weighted_sum": -0.14957550280719725,
+    "pre_normalized_rating": 0.9162377184279695,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "yqss8O2X6Q3KW24kV7nm8OtzpKRFynr58FeGwsIHHUPncJP77EhIGyRauu46xZgiEh6K81oiemmY1A_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": 0.1930030847378679,
+    "player_info": {
+      "name": "QOR nerve",
+      "tagline": "epval",
+      "kills": 22,
+      "deaths": 20,
+      "assists": 7,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 4.344693280356173,
+      "DeathContrib": -3.5007728327983174,
+      "APR": 0.21875,
+      "ADRa": 65.875
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.11676445193954571,
+      "DeathContrib_norm": 0.11676445193954571,
+      "APR_norm": -0.12197394543581182,
+      "ADRa_norm": -0.0035214121462909674
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.05037736856483059,
+      "DeathContrib_weighted": 0.05037736856483059,
+      "APR_weighted": -0.006345826251198954,
+      "ADRa_weighted": -0.0002996197955265861
+    },
+    "weighted_sum": 0.09410929108293564,
+    "pre_normalized_rating": 1.052701203006444,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "cTCPPo26mXW1e8r-KAXlC8eX1D0RgR2ftPJ6kBDWRSHDYt_PupfdTZ_3qtWrEluxB_GnwivOValX9w_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": 0.7827638459153801,
+    "player_info": {
+      "name": "TSM seven",
+      "tagline": "epval",
+      "kills": 22,
+      "deaths": 23,
+      "assists": 13,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 4.606404918081677,
+      "DeathContrib": -3.3432399608012906,
+      "APR": 0.40625,
+      "ADRa": 86.90625
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.1747709329391174,
+      "DeathContrib_norm": 0.1747709329391174,
+      "APR_norm": 0.24048567656229763,
+      "ADRa_norm": 0.2979595353759481
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.07540393978512999,
+      "DeathContrib_weighted": 0.07540393978512999,
+      "APR_weighted": 0.01251152706353556,
+      "ADRa_weighted": 0.025351924556337228
+    },
+    "weighted_sum": 0.18867133119013277,
+    "pre_normalized_rating": 1.1056559454664743,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "XpmiD47h90uK5qZrZu-4sEDu7bkc2IeG4_rWLPnd42agCQMbciA3vRq0gmBzsZTue7130xR8UcwtEQ_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": -0.7535159965750308,
+    "player_info": {
+      "name": "QOR toozy",
+      "tagline": "epval",
+      "kills": 18,
+      "deaths": 23,
+      "assists": 11,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 3.2090781818709426,
+      "DeathContrib": -3.57785844090757,
+      "APR": 0.34375,
+      "ADRa": 49.84375
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.05102427006851667,
+      "DeathContrib_norm": -0.05102427006851667,
+      "APR_norm": 0.1196658025629278,
+      "ADRa_norm": -0.23332784019816116
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.02201413543502064,
+      "DeathContrib_weighted": -0.02201413543502064,
+      "APR_weighted": 0.006225742625290722,
+      "ADRa_weighted": -0.019852728640260817
+    },
+    "weighted_sum": -0.05765525688501138,
+    "pre_normalized_rating": 0.9677130561443936,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "swDtN25J7GSjiF6EPvlEBE23P2P4MZSgaqFKVDLepZ6u_ksLR_jX_KFeuHd19EpdJRGeEIZ1uJ2FmA_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": 0.28545527276490845,
+    "player_info": {
+      "name": "TSM vora",
+      "tagline": "epval",
+      "kills": 19,
+      "deaths": 26,
+      "assists": 8,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 4.197482712679706,
+      "DeathContrib": -3.283817754456826,
+      "APR": 0.25,
+      "ADRa": 68.625
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.1264142709327454,
+      "DeathContrib_norm": 0.1264142709327454,
+      "APR_norm": -0.061564008436126916,
+      "ADRa_norm": 0.03589957356241191
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.05454072890206762,
+      "DeathContrib_weighted": 0.05454072890206762,
+      "APR_weighted": -0.003202934032076535,
+      "ADRa_weighted": 0.0030545197333946856
+    },
+    "weighted_sum": 0.10893304350545338,
+    "pre_normalized_rating": 1.061002504363054,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "BoMhMN_zU424iSKWGphS-p2eEshEw2ZWb4JGHNBZclHuyD6jyYBXtQyXyoOMTy_TzlM9Oxh-yr2KaA_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": 3.2362796853166444,
+    "player_info": {
+      "name": "QOR Alym",
+      "tagline": "epval",
+      "kills": 37,
+      "deaths": 18,
+      "assists": 3,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 7.579838738967595,
+      "DeathContrib": -2.7864405231570943,
+      "APR": 0.09375,
+      "ADRa": 89.65625
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.663212412042829,
+      "DeathContrib_norm": 0.663212412042829,
+      "APR_norm": -0.36361369343455147,
+      "ADRa_norm": 0.337380521084651
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.2861392792350041,
+      "DeathContrib_weighted": 0.2861392792350041,
+      "APR_weighted": -0.01891739512768863,
+      "ADRa_weighted": 0.0287060640852585
+    },
+    "weighted_sum": 0.5820672274275781,
+    "pre_normalized_rating": 1.3259576473594437,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "b85NoHBgWomQHJXCuJTwD56fuIdhh1OJOgzRKh_lC6USKsbWdV5bVXMLjnL0NBlk3hKe7H2KzVa3cw_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": 0.818179798848742,
+    "player_info": {
+      "name": "TSM alvinboy",
+      "tagline": "epval",
+      "kills": 25,
+      "deaths": 25,
+      "assists": 7,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 5.420184862990184,
+      "DeathContrib": -3.8435998223126204,
+      "APR": 0.21875,
+      "ADRa": 76.34375
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.2181355941114126,
+      "DeathContrib_norm": 0.2181355941114126,
+      "APR_norm": -0.12197394543581182,
+      "ADRa_norm": 0.14654711299479387
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.09411337987822252,
+      "DeathContrib_weighted": 0.09411337987822252,
+      "APR_weighted": -0.006345826251198954,
+      "ADRa_weighted": 0.012468979547525983
+    },
+    "weighted_sum": 0.19434991305277208,
+    "pre_normalized_rating": 1.1088359513095525,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "nrHCagF9N5GKNqpB8x4c90bDhPmh6z4ro2s3ixKmrtWzp5RNWqVwLe29IGN23Cuq6VNlFFHU47rhKg_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": 0.015112987348845171,
+    "player_info": {
+      "name": "TSM Timotino",
+      "tagline": "epval",
+      "kills": 24,
+      "deaths": 27,
+      "assists": 5,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 5.134000865566318,
+      "DeathContrib": -4.559024137258102,
+      "APR": 0.15625,
+      "ADRa": 73.96875
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.07955352042148411,
+      "DeathContrib_norm": 0.07955352042148411,
+      "APR_norm": -0.24279381943518163,
+      "ADRa_norm": 0.11250171624636865
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.03432292065206498,
+      "DeathContrib_weighted": 0.03432292065206498,
+      "APR_weighted": -0.012631610689443792,
+      "ADRa_weighted": 0.009572222681639429
+    },
+    "weighted_sum": 0.06558645329632559,
+    "pre_normalized_rating": 1.0367284138459423,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "Vf77olgXDg1WBHtdrnR7c9I6F5TQsoPwGL-vV3Uez_zIAzNpkppiDAEtweChe0CnSOtoQ3IvvdZhRw_5f73752e-706e-44bd-8050-d27b810929cc": {
+    "rating": -1.2526913524624501,
+    "player_info": {
+      "name": "QOR Logan1",
+      "tagline": "epval",
+      "kills": 25,
+      "deaths": 27,
+      "assists": 13,
+      "rounds_played": 32
+    },
+    "components": {
+      "KillContrib": 3.7330907325086473,
+      "DeathContrib": -5.078720507248288,
+      "APR": 0.40625,
+      "ADRa": 74.6875
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.18618072783481987,
+      "DeathContrib_norm": -0.18618072783481987,
+      "APR_norm": 0.24048567656229763,
+      "ADRa_norm": 0.12280492842023417
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.0803266318644584,
+      "DeathContrib_weighted": -0.0803266318644584,
+      "APR_weighted": 0.01251152706353556,
+      "ADRa_weighted": 0.010448872785789307
+    },
+    "weighted_sum": -0.13769286387959195,
+    "pre_normalized_rating": 0.9228919962274285,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "5f73752e-706e-44bd-8050-d27b810929cc"
+  },
+  "ZInVzr5HvH66xON4FnxiV32yQd741M39-LbWLpJO1YnjcOoQZcZm0kDGkZLnXVcY3q3QIMK6P8PnBQ_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": -0.7399413398930246,
+    "player_info": {
+      "name": "QOR Dark3st",
+      "tagline": "epval",
+      "kills": 8,
+      "deaths": 15,
+      "assists": 19,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 1.7434829601540285,
+      "DeathContrib": -2.557519432675953,
+      "APR": 0.9047619047619048,
+      "ADRa": 48.95238095238095
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.11262971865165915,
+      "DeathContrib_norm": -0.11262971865165915,
+      "APR_norm": 1.2041680048906043,
+      "ADRa_norm": -0.24610552982993233
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.048593461054443954,
+      "DeathContrib_weighted": -0.048593461054443954,
+      "APR_weighted": 0.06264814103525033,
+      "ADRa_weighted": -0.020939919970252078
+    },
+    "weighted_sum": -0.05547870104388965,
+    "pre_normalized_rating": 0.9689319274154218,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "nrHCagF9N5GKNqpB8x4c90bDhPmh6z4ro2s3ixKmrtWzp5RNWqVwLe29IGN23Cuq6VNlFFHU47rhKg_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": 0.0385864856180239,
+    "player_info": {
+      "name": "TSM Timotino",
+      "tagline": "epval",
+      "kills": 17,
+      "deaths": 14,
+      "assists": 8,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 2.996366902194964,
+      "DeathContrib": -2.5809319282888015,
+      "APR": 0.38095238095238093,
+      "ADRa": 74.14285714285714
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.0574793953447218,
+      "DeathContrib_norm": 0.0574793953447218,
+      "APR_norm": 0.19158239422921933,
+      "ADRa_norm": 0.1149975254064975
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.024799163067744913,
+      "DeathContrib_weighted": 0.024799163067744913,
+      "APR_weighted": 0.009967280981388838,
+      "ADRa_weighted": 0.009784578918048402
+    },
+    "weighted_sum": 0.06935018603492707,
+    "pre_normalized_rating": 1.038836104179559,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "b85NoHBgWomQHJXCuJTwD56fuIdhh1OJOgzRKh_lC6USKsbWdV5bVXMLjnL0NBlk3hKe7H2KzVa3cw_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": -0.10325854808754292,
+    "player_info": {
+      "name": "TSM alvinboy",
+      "tagline": "epval",
+      "kills": 17,
+      "deaths": 15,
+      "assists": 5,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 3.2031761072257847,
+      "DeathContrib": -2.699304832521176,
+      "APR": 0.23809523809523808,
+      "ADRa": 58.61904761904762
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.06971540197801696,
+      "DeathContrib_norm": 0.06971540197801696,
+      "APR_norm": -0.08457731776934024,
+      "ADRa_norm": -0.10753479218721912
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.03007831957204101,
+      "DeathContrib_weighted": 0.03007831957204101,
+      "APR_weighted": -0.004400226306027935,
+      "ADRa_weighted": -0.009149611323134875
+    },
+    "weighted_sum": 0.046606801514919215,
+    "pre_normalized_rating": 1.0260998088483548,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "Vf77olgXDg1WBHtdrnR7c9I6F5TQsoPwGL-vV3Uez_zIAzNpkppiDAEtweChe0CnSOtoQ3IvvdZhRw_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": 1.277082292262821,
+    "player_info": {
+      "name": "QOR Logan1",
+      "tagline": "epval",
+      "kills": 17,
+      "deaths": 14,
+      "assists": 2,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 3.9380957083761796,
+      "DeathContrib": -1.3739734324969253,
+      "APR": 0.09523809523809523,
+      "ADRa": 50.19047619047619
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.35477079992009103,
+      "DeathContrib_norm": 0.35477079992009103,
+      "APR_norm": -0.3607370297678998,
+      "ADRa_norm": -0.2283575535801267
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.15306387386520312,
+      "DeathContrib_weighted": 0.15306387386520312,
+      "APR_weighted": -0.018767733593444705,
+      "ADRa_weighted": -0.019429831178010466
+    },
+    "weighted_sum": 0.26793018295895105,
+    "pre_normalized_rating": 1.1500409024570126,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "swDtN25J7GSjiF6EPvlEBE23P2P4MZSgaqFKVDLepZ6u_ksLR_jX_KFeuHd19EpdJRGeEIZ1uJ2FmA_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": -0.28719469339825354,
+    "player_info": {
+      "name": "TSM vora",
+      "tagline": "epval",
+      "kills": 8,
+      "deaths": 12,
+      "assists": 5,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 1.4635306740102434,
+      "DeathContrib": -1.2879283948475666,
+      "APR": 0.23809523809523808,
+      "ADRa": 66.57142857142857
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.024296252028375438,
+      "DeathContrib_norm": 0.024296252028375438,
+      "APR_norm": -0.08457731776934024,
+      "ADRa_norm": 0.006461824494224669
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.010482481807144466,
+      "DeathContrib_weighted": 0.010482481807144466,
+      "APR_weighted": -0.004400226306027935,
+      "ADRa_weighted": 0.000549805150109318
+    },
+    "weighted_sum": 0.017114542458370314,
+    "pre_normalized_rating": 1.0095841437766875,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "cTCPPo26mXW1e8r-KAXlC8eX1D0RgR2ftPJ6kBDWRSHDYt_PupfdTZ_3qtWrEluxB_GnwivOValX9w_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": 1.2948806629234337,
+    "player_info": {
+      "name": "TSM seven",
+      "tagline": "epval",
+      "kills": 20,
+      "deaths": 10,
+      "assists": 13,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 3.6881518985186448,
+      "DeathContrib": -1.53213747329924,
+      "APR": 0.6190476190476191,
+      "ADRa": 49.285714285714285
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.29830518203819173,
+      "DeathContrib_norm": 0.29830518203819173,
+      "APR_norm": 0.6518485808934854,
+      "ADRa_norm": -0.24132722853190772
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.12870209940365637,
+      "DeathContrib_weighted": 0.12870209940365637,
+      "APR_weighted": 0.0339131264604168,
+      "ADRa_weighted": -0.020533357603110102
+    },
+    "weighted_sum": 0.27078396766461943,
+    "pre_normalized_rating": 1.1516390218921868,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "XpmiD47h90uK5qZrZu-4sEDu7bkc2IeG4_rWLPnd42agCQMbciA3vRq0gmBzsZTue7130xR8UcwtEQ_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": -0.8768457649942554,
+    "player_info": {
+      "name": "QOR toozy",
+      "tagline": "epval",
+      "kills": 13,
+      "deaths": 18,
+      "assists": 4,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 2.3580396951399343,
+      "DeathContrib": -2.5717988223511385,
+      "APR": 0.19047619047619047,
+      "ADRa": 31.095238095238095
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.029575616289568306,
+      "DeathContrib_norm": -0.029575616289568306,
+      "APR_norm": -0.17663055510219342,
+      "ADRa_norm": -0.5020859565098211
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.012760233937662816,
+      "DeathContrib_weighted": -0.012760233937662816,
+      "APR_weighted": -0.009189395401833524,
+      "ADRa_weighted": -0.04272004678142916
+    },
+    "weighted_sum": -0.07742991005858832,
+    "pre_normalized_rating": 0.9566392503671906,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "BoMhMN_zU424iSKWGphS-p2eEshEw2ZWb4JGHNBZclHuyD6jyYBXtQyXyoOMTy_TzlM9Oxh-yr2KaA_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": -0.7668383112051244,
+    "player_info": {
+      "name": "QOR Alym",
+      "tagline": "epval",
+      "kills": 14,
+      "deaths": 16,
+      "assists": 3,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 2.215778133934998,
+      "DeathContrib": -2.6138402501763065,
+      "APR": 0.14285714285714285,
+      "ADRa": 67.52380952380952
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.05507569460523786,
+      "DeathContrib_norm": -0.05507569460523786,
+      "APR_norm": -0.2686837924350466,
+      "ADRa_norm": 0.020114113917152024
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.02376209985149111,
+      "DeathContrib_weighted": -0.02376209985149111,
+      "APR_weighted": -0.013978564497639115,
+      "ADRa_weighted": 0.0017114119133720919
+    },
+    "weighted_sum": -0.05979135228724924,
+    "pre_normalized_rating": 0.9665168427191404,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "OI7ZGF1yTFU7xiJjgc22Q-psXGbNIKbrLBtTtEcHBbRSmQlgI-AbiiJZm78riEFNYs0Cd4ECbmt8bw_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": 1.0755447261014794,
+    "player_info": {
+      "name": "TSM gMd",
+      "tagline": "epval",
+      "kills": 18,
+      "deaths": 11,
+      "assists": 12,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 3.3542950946766164,
+      "DeathContrib": -1.5977065772310584,
+      "APR": 0.5714285714285714,
+      "ADRa": 63.476190476190474
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.24304079385251343,
+      "DeathContrib_norm": 0.24304079385251343,
+      "APR_norm": 0.5597953435606321,
+      "ADRa_norm": -0.037908116130289396
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.10485858876412346,
+      "DeathContrib_weighted": 0.10485858876412346,
+      "APR_weighted": 0.0291239573646112,
+      "ADRa_weighted": -0.003225416830494711
+    },
+    "weighted_sum": 0.23561571806236342,
+    "pre_normalized_rating": 1.1319448021149234,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "yqss8O2X6Q3KW24kV7nm8OtzpKRFynr58FeGwsIHHUPncJP77EhIGyRauu46xZgiEh6K81oiemmY1A_82130c07-0d02-41a6-8726-d6a22452a715": {
+    "rating": -1.1326277735800145,
+    "player_info": {
+      "name": "QOR nerve",
+      "tagline": "epval",
+      "kills": 10,
+      "deaths": 17,
+      "assists": 6,
+      "rounds_played": 21
+    },
+    "components": {
+      "KillContrib": 2.1748201303845773,
+      "DeathContrib": -2.935402806823045,
+      "APR": 0.2857142857142857,
+      "ADRa": 43.142857142857146
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.10523387556972556,
+      "DeathContrib_norm": -0.10523387556972556,
+      "APR_norm": 0.007475919563512948,
+      "ADRa_norm": -0.3293844953097894
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.04540256599522573,
+      "DeathContrib_weighted": -0.04540256599522573,
+      "APR_weighted": 0.00038894278977765645,
+      "ADRa_weighted": -0.028025721226155015
+    },
+    "weighted_sum": -0.1184419104268288,
+    "pre_normalized_rating": 0.9336725301609758,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "82130c07-0d02-41a6-8726-d6a22452a715"
+  },
+  "b85NoHBgWomQHJXCuJTwD56fuIdhh1OJOgzRKh_lC6USKsbWdV5bVXMLjnL0NBlk3hKe7H2KzVa3cw_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": -0.7117896192728993,
+    "player_info": {
+      "name": "TSM alvinboy",
+      "tagline": "epval",
+      "kills": 13,
+      "deaths": 16,
+      "assists": 3,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.2154803005612465,
+      "DeathContrib": -2.2301877653309274,
+      "APR": 0.125,
+      "ADRa": 38.708333333333336
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.00203491818242056,
+      "DeathContrib_norm": -0.00203491818242056,
+      "APR_norm": -0.3032037564348665,
+      "ADRa_norm": -0.39295296793529516
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.0008779540482761982,
+      "DeathContrib_weighted": -0.0008779540482761982,
+      "APR_weighted": -0.01577450290856621,
+      "ADRa_weighted": -0.033434452717597325
+    },
+    "weighted_sum": -0.050964863722715935,
+    "pre_normalized_rating": 0.9714596763152791,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "yqss8O2X6Q3KW24kV7nm8OtzpKRFynr58FeGwsIHHUPncJP77EhIGyRauu46xZgiEh6K81oiemmY1A_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": -0.427298758125174,
+    "player_info": {
+      "name": "QOR nerve",
+      "tagline": "epval",
+      "kills": 13,
+      "deaths": 16,
+      "assists": 6,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.2477780989478315,
+      "DeathContrib": -2.1653455957372385,
+      "APR": 0.25,
+      "ADRa": 56.291666666666664
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.011405323910853426,
+      "DeathContrib_norm": 0.011405323910853426,
+      "APR_norm": -0.061564008436126916,
+      "ADRa_norm": -0.14089757446449802
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.004920763097965975,
+      "DeathContrib_weighted": 0.004920763097965975,
+      "APR_weighted": -0.003202934032076535,
+      "ADRa_weighted": -0.011988287850858294
+    },
+    "weighted_sum": -0.00534969568700288,
+    "pre_normalized_rating": 0.9970041704152783,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "XpmiD47h90uK5qZrZu-4sEDu7bkc2IeG4_rWLPnd42agCQMbciA3vRq0gmBzsZTue7130xR8UcwtEQ_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": 0.9870279877912809,
+    "player_info": {
+      "name": "QOR toozy",
+      "tagline": "epval",
+      "kills": 23,
+      "deaths": 15,
+      "assists": 10,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 3.8429553976721067,
+      "DeathContrib": -2.1287522400116625,
+      "APR": 0.4166666666666667,
+      "ADRa": 68.75
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.23717637461739352,
+      "DeathContrib_norm": 0.23717637461739352,
+      "APR_norm": 0.2606223222288593,
+      "ADRa_norm": 0.037691436549171134
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.10232841794313355,
+      "DeathContrib_weighted": 0.10232841794313355,
+      "APR_weighted": 0.013559157803243035,
+      "ADRa_weighted": 0.003206980621072925
+    },
+    "weighted_sum": 0.22142297431058305,
+    "pre_normalized_rating": 1.1239968656139265,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "swDtN25J7GSjiF6EPvlEBE23P2P4MZSgaqFKVDLepZ6u_ksLR_jX_KFeuHd19EpdJRGeEIZ1uJ2FmA_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": 0.668508658548532,
+    "player_info": {
+      "name": "TSM vora",
+      "tagline": "epval",
+      "kills": 18,
+      "deaths": 15,
+      "assists": 8,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 3.1508313451624397,
+      "DeathContrib": -1.947442339508858,
+      "APR": 0.3333333333333333,
+      "ADRa": 83.75
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.1665003592718167,
+      "DeathContrib_norm": 0.1665003592718167,
+      "APR_norm": 0.09952915689636614,
+      "ADRa_norm": 0.2527149949602778
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.07183564711592011,
+      "DeathContrib_weighted": 0.07183564711592011,
+      "APR_weighted": 0.005178111885583247,
+      "ADRa_weighted": 0.02150228714246168
+    },
+    "weighted_sum": 0.17035169325988514,
+    "pre_normalized_rating": 1.0953969482255357,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "ZInVzr5HvH66xON4FnxiV32yQd741M39-LbWLpJO1YnjcOoQZcZm0kDGkZLnXVcY3q3QIMK6P8PnBQ_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": -1.2735959753123236,
+    "player_info": {
+      "name": "QOR Dark3st",
+      "tagline": "epval",
+      "kills": 12,
+      "deaths": 21,
+      "assists": 13,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.204757683863339,
+      "DeathContrib": -3.2623969656668854,
+      "APR": 0.5416666666666666,
+      "ADRa": 32.583333333333336
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.14633449331260517,
+      "DeathContrib_norm": -0.14633449331260517,
+      "APR_norm": 0.5022620702275988,
+      "ADRa_norm": -0.48075425428649704
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.06313519723600161,
+      "DeathContrib_weighted": -0.06313519723600161,
+      "APR_weighted": 0.026130726679732708,
+      "ADRa_weighted": -0.04090503621383107
+    },
+    "weighted_sum": -0.14104470400610158,
+    "pre_normalized_rating": 0.9210149657565831,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "BoMhMN_zU424iSKWGphS-p2eEshEw2ZWb4JGHNBZclHuyD6jyYBXtQyXyoOMTy_TzlM9Oxh-yr2KaA_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": -0.27580631664796995,
+    "player_info": {
+      "name": "QOR Alym",
+      "tagline": "epval",
+      "kills": 14,
+      "deaths": 16,
+      "assists": 7,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 3.012458610479312,
+      "DeathContrib": -2.7991300431462274,
+      "APR": 0.2916666666666667,
+      "ADRa": 59.958333333333336
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.02951604421930828,
+      "DeathContrib_norm": 0.02951604421930828,
+      "APR_norm": 0.018982574230119665,
+      "ADRa_norm": -0.08833626018622744
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.012734531901728,
+      "DeathContrib_weighted": 0.012734531901728,
+      "APR_weighted": 0.000987588926753359,
+      "ADRa_weighted": -0.007516101812296592
+    },
+    "weighted_sum": 0.018940550917912767,
+    "pre_normalized_rating": 1.0106067085140311,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "nrHCagF9N5GKNqpB8x4c90bDhPmh6z4ro2s3ixKmrtWzp5RNWqVwLe29IGN23Cuq6VNlFFHU47rhKg_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": -0.5793135528199175,
+    "player_info": {
+      "name": "TSM Timotino",
+      "tagline": "epval",
+      "kills": 14,
+      "deaths": 19,
+      "assists": 7,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.351684241401729,
+      "DeathContrib": -2.697931067206,
+      "APR": 0.2916666666666667,
+      "ADRa": 74.83333333333333
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.047906554424457626,
+      "DeathContrib_norm": -0.047906554424457626,
+      "APR_norm": 0.018982574230119665,
+      "ADRa_norm": 0.12489543523811987
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.020669014488772217,
+      "DeathContrib_weighted": -0.020669014488772217,
+      "APR_weighted": 0.000987588926753359,
+      "ADRa_weighted": 0.010626743821413915
+    },
+    "weighted_sum": -0.02972369622937716,
+    "pre_normalized_rating": 0.9833547301115488,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "Vf77olgXDg1WBHtdrnR7c9I6F5TQsoPwGL-vV3Uez_zIAzNpkppiDAEtweChe0CnSOtoQ3IvvdZhRw_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": -0.08986692084231224,
+    "player_info": {
+      "name": "QOR Logan1",
+      "tagline": "epval",
+      "kills": 17,
+      "deaths": 17,
+      "assists": 4,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.915501319174112,
+      "DeathContrib": -2.465918250922717,
+      "APR": 0.16666666666666666,
+      "ADRa": 71.58333333333333
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.06220411025421282,
+      "DeathContrib_norm": 0.06220411025421282,
+      "APR_norm": -0.22265717376862001,
+      "ADRa_norm": 0.07830699758238009
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.02683761484313981,
+      "DeathContrib_weighted": 0.02683761484313981,
+      "APR_weighted": -0.01158397994973632,
+      "ADRa_weighted": 0.006662760741779684
+    },
+    "weighted_sum": 0.048754010478322986,
+    "pre_normalized_rating": 1.027302245867861,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "cTCPPo26mXW1e8r-KAXlC8eX1D0RgR2ftPJ6kBDWRSHDYt_PupfdTZ_3qtWrEluxB_GnwivOValX9w_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": 1.0482702185058443,
+    "player_info": {
+      "name": "TSM seven",
+      "tagline": "epval",
+      "kills": 21,
+      "deaths": 14,
+      "assists": 13,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 4.123490265869779,
+      "DeathContrib": -2.145010543843506,
+      "APR": 0.5416666666666666,
+      "ADRa": 40.625
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.27374156069380573,
+      "DeathContrib_norm": 0.27374156069380573,
+      "APR_norm": 0.5022620702275988,
+      "ADRa_norm": -0.3654777354716538
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.11810426260317398,
+      "DeathContrib_weighted": 0.11810426260317398,
+      "APR_weighted": 0.026130726679732708,
+      "ADRa_weighted": -0.03109671910653099
+    },
+    "weighted_sum": 0.23124253277954968,
+    "pre_normalized_rating": 1.1294958183565478,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "OI7ZGF1yTFU7xiJjgc22Q-psXGbNIKbrLBtTtEcHBbRSmQlgI-AbiiJZm78riEFNYs0Cd4ECbmt8bw_832d5395-e218-41d1-ae07-940d63043deb": {
+    "rating": 0.7843322221210827,
+    "player_info": {
+      "name": "TSM gMd",
+      "tagline": "epval",
+      "kills": 19,
+      "deaths": 15,
+      "assists": 8,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 4.182751664827146,
+      "DeathContrib": -2.404526136621032,
+      "APR": 0.3333333333333333,
+      "ADRa": 42.708333333333336
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.24603448088827298,
+      "DeathContrib_norm": 0.24603448088827298,
+      "APR_norm": 0.09952915689636614,
+      "ADRa_norm": -0.3356133523590001
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.10615019826224621,
+      "DeathContrib_weighted": 0.10615019826224621,
+      "APR_weighted": 0.005178111885583247,
+      "ADRa_weighted": -0.02855570431189366
+    },
+    "weighted_sum": 0.18892280409818202,
+    "pre_normalized_rating": 1.105796770294982,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "832d5395-e218-41d1-ae07-940d63043deb"
+  },
+  "BoMhMN_zU424iSKWGphS-p2eEshEw2ZWb4JGHNBZclHuyD6jyYBXtQyXyoOMTy_TzlM9Oxh-yr2KaA_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": 0.32076955380500594,
+    "player_info": {
+      "name": "QOR Alym",
+      "tagline": "epval",
+      "kills": 21,
+      "deaths": 21,
+      "assists": 5,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 4.403498224328183,
+      "DeathContrib": -3.4707311667978797,
+      "APR": 0.20833333333333334,
+      "ADRa": 74.83333333333333
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.12905722876482598,
+      "DeathContrib_norm": 0.12905722876482598,
+      "APR_norm": -0.14211059110237345,
+      "ADRa_norm": 0.12489543523811987
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.05568101825037856,
+      "DeathContrib_weighted": 0.05568101825037856,
+      "APR_weighted": -0.007393456990906427,
+      "ADRa_weighted": 0.010626743821413915
+    },
+    "weighted_sum": 0.1145953233312646,
+    "pre_normalized_rating": 1.0641733810655083,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "XpmiD47h90uK5qZrZu-4sEDu7bkc2IeG4_rWLPnd42agCQMbciA3vRq0gmBzsZTue7130xR8UcwtEQ_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": -1.456702963375253,
+    "player_info": {
+      "name": "QOR toozy",
+      "tagline": "epval",
+      "kills": 8,
+      "deaths": 18,
+      "assists": 11,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 1.7403413644316328,
+      "DeathContrib": -3.0728755003248005,
+      "APR": 0.4583333333333333,
+      "ADRa": 42.291666666666664
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.1843688211590999,
+      "DeathContrib_norm": -0.1843688211590999,
+      "APR_norm": 0.34116890489510576,
+      "ADRa_norm": -0.34158622898153085
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.07954489488122757,
+      "DeathContrib_weighted": -0.07954489488122757,
+      "APR_weighted": 0.017749680762072922,
+      "ADRa_weighted": -0.02906390727082113
+    },
+    "weighted_sum": -0.17040401627120333,
+    "pre_normalized_rating": 0.9045737508881261,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "b85NoHBgWomQHJXCuJTwD56fuIdhh1OJOgzRKh_lC6USKsbWdV5bVXMLjnL0NBlk3hKe7H2KzVa3cw_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": -0.9153343560423786,
+    "player_info": {
+      "name": "TSM alvinboy",
+      "tagline": "epval",
+      "kills": 13,
+      "deaths": 18,
+      "assists": 4,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.576403461085308,
+      "DeathContrib": -2.8382753888890604,
+      "APR": 0.16666666666666666,
+      "ADRa": 32.708333333333336
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.03623248164781687,
+      "DeathContrib_norm": -0.03623248164781687,
+      "APR_norm": -0.22265717376862001,
+      "ADRa_norm": -0.47896239129973783
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.015632301198446684,
+      "DeathContrib_weighted": -0.015632301198446684,
+      "APR_weighted": -0.01158397994973632,
+      "ADRa_weighted": -0.04075257532615283
+    },
+    "weighted_sum": -0.08360115767278252,
+    "pre_normalized_rating": 0.9531833517032418,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "Vf77olgXDg1WBHtdrnR7c9I6F5TQsoPwGL-vV3Uez_zIAzNpkppiDAEtweChe0CnSOtoQ3IvvdZhRw_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": -0.5242078127426189,
+    "player_info": {
+      "name": "QOR Logan1",
+      "tagline": "epval",
+      "kills": 16,
+      "deaths": 16,
+      "assists": 0,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 3.0358465790614835,
+      "DeathContrib": -2.7137639692816746,
+      "APR": 0.0,
+      "ADRa": 40.708333333333336
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.044563204409879764,
+      "DeathContrib_norm": 0.044563204409879764,
+      "APR_norm": -0.5448435044336062,
+      "ADRa_norm": -0.3642831601471476
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.019226544857579804,
+      "DeathContrib_weighted": 0.019226544857579804,
+      "APR_weighted": -0.02834607178505589,
+      "ADRa_weighted": -0.030995078514745495
+    },
+    "weighted_sum": -0.020888060584641776,
+    "pre_normalized_rating": 0.9883026860726006,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "ZInVzr5HvH66xON4FnxiV32yQd741M39-LbWLpJO1YnjcOoQZcZm0kDGkZLnXVcY3q3QIMK6P8PnBQ_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": 1.5669572386475916,
+    "player_info": {
+      "name": "QOR Dark3st",
+      "tagline": "epval",
+      "kills": 25,
+      "deaths": 16,
+      "assists": 5,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 5.25770445546682,
+      "DeathContrib": -2.760275118908602,
+      "APR": 0.20833333333333334,
+      "ADRa": 85.5
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.3455431949597025,
+      "DeathContrib_norm": 0.3455431949597025,
+      "APR_norm": -0.14211059110237345,
+      "ADRa_norm": 0.2778010767749069
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.1490826754067816,
+      "DeathContrib_weighted": 0.1490826754067816,
+      "APR_weighted": -0.007393456990906427,
+      "ADRa_weighted": 0.023636739569957037
+    },
+    "weighted_sum": 0.3144086333926138,
+    "pre_normalized_rating": 1.1760688346998638,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "cTCPPo26mXW1e8r-KAXlC8eX1D0RgR2ftPJ6kBDWRSHDYt_PupfdTZ_3qtWrEluxB_GnwivOValX9w_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": -0.4306278470479703,
+    "player_info": {
+      "name": "TSM seven",
+      "tagline": "epval",
+      "kills": 11,
+      "deaths": 17,
+      "assists": 16,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.3885669445344133,
+      "DeathContrib": -2.6041376350620844,
+      "APR": 0.6666666666666666,
+      "ADRa": 50.666666666666664
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.02982626337178222,
+      "DeathContrib_norm": -0.02982626337178222,
+      "APR_norm": 0.7439018182263385,
+      "ADRa_norm": -0.221531408868663
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.01286837421692287,
+      "DeathContrib_weighted": -0.01286837421692287,
+      "APR_weighted": 0.038702295556222385,
+      "ADRa_weighted": -0.018849027796379075
+    },
+    "weighted_sum": -0.00588348067400243,
+    "pre_normalized_rating": 0.9967052508225587,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "OI7ZGF1yTFU7xiJjgc22Q-psXGbNIKbrLBtTtEcHBbRSmQlgI-AbiiJZm78riEFNYs0Cd4ECbmt8bw_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": 1.1387333558797974,
+    "player_info": {
+      "name": "TSM gMd",
+      "tagline": "epval",
+      "kills": 24,
+      "deaths": 14,
+      "assists": 5,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 4.520672403699795,
+      "DeathContrib": -2.64772678251318,
+      "APR": 0.20833333333333334,
+      "ADRa": 90.33333333333333
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.25913991016959487,
+      "DeathContrib_norm": 0.25913991016959487,
+      "APR_norm": -0.14211059110237345,
+      "ADRa_norm": 0.3470864455962634
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.11180446229670851,
+      "DeathContrib_weighted": 0.11180446229670851,
+      "APR_weighted": -0.007393456990906427,
+      "ADRa_weighted": 0.02953189389351563
+    },
+    "weighted_sum": 0.24574736149602622,
+    "pre_normalized_rating": 1.1376185224377746,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "yqss8O2X6Q3KW24kV7nm8OtzpKRFynr58FeGwsIHHUPncJP77EhIGyRauu46xZgiEh6K81oiemmY1A_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": 0.32568215043855503,
+    "player_info": {
+      "name": "QOR nerve",
+      "tagline": "epval",
+      "kills": 13,
+      "deaths": 14,
+      "assists": 8,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.952072869698721,
+      "DeathContrib": -1.93113827933513,
+      "APR": 0.3333333333333333,
+      "ADRa": 56.541666666666664
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.1412560487838598,
+      "DeathContrib_norm": 0.1412560487838598,
+      "APR_norm": 0.09952915689636614,
+      "ADRa_norm": -0.13731384849097958
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.06094413079830606,
+      "DeathContrib_weighted": 0.06094413079830606,
+      "APR_weighted": 0.005178111885583247,
+      "ADRa_weighted": -0.011683366075501815
+    },
+    "weighted_sum": 0.11538300740669355,
+    "pre_normalized_rating": 1.0646144841477483,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "swDtN25J7GSjiF6EPvlEBE23P2P4MZSgaqFKVDLepZ6u_ksLR_jX_KFeuHd19EpdJRGeEIZ1uJ2FmA_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": -0.809997241989895,
+    "player_info": {
+      "name": "TSM vora",
+      "tagline": "epval",
+      "kills": 10,
+      "deaths": 16,
+      "assists": 8,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 2.1256774653238866,
+      "DeathContrib": -2.5056680553465456,
+      "APR": 0.3333333333333333,
+      "ADRa": 44.375
+    },
+    "normalized_components": {
+      "KillContrib_norm": -0.052575326400227544,
+      "DeathContrib_norm": -0.052575326400227544,
+      "APR_norm": 0.09952915689636614,
+      "ADRa_norm": -0.31172184586887713
+    },
+    "weighted_components": {
+      "KillContrib_weighted": -0.022683329998858175,
+      "DeathContrib_weighted": -0.022683329998858175,
+      "APR_weighted": 0.005178111885583247,
+      "ADRa_weighted": -0.0265228924761838
+    },
+    "weighted_sum": -0.0667114405883169,
+    "pre_normalized_rating": 0.9626415932705426,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  },
+  "nrHCagF9N5GKNqpB8x4c90bDhPmh6z4ro2s3ixKmrtWzp5RNWqVwLe29IGN23Cuq6VNlFFHU47rhKg_fd713e27-8045-4ede-9955-9843e19b431a": {
+    "rating": 0.7471034226422167,
+    "player_info": {
+      "name": "TSM Timotino",
+      "tagline": "epval",
+      "kills": 27,
+      "deaths": 18,
+      "assists": 3,
+      "rounds_played": 24
+    },
+    "components": {
+      "KillContrib": 4.997871043430148,
+      "DeathContrib": -3.3891344934885708,
+      "APR": 0.125,
+      "ADRa": 71.58333333333333
+    },
+    "normalized_components": {
+      "KillContrib_norm": 0.22258406241088988,
+      "DeathContrib_norm": 0.22258406241088988,
+      "APR_norm": -0.3032037564348665,
+      "ADRa_norm": 0.07830699758238009
+    },
+    "weighted_components": {
+      "KillContrib_weighted": 0.0960326466015208,
+      "DeathContrib_weighted": 0.0960326466015208,
+      "APR_weighted": -0.01577450290856621,
+      "ADRa_weighted": 0.006662760741779684
+    },
+    "weighted_sum": 0.18295355103625507,
+    "pre_normalized_rating": 1.1024539885803029,
+    "scaling_factor": 0.56,
+    "base_rating": 1.0,
+    "match_id": "fd713e27-8045-4ede-9955-9843e19b431a"
+  }
+}

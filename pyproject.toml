@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "open-soup-rating"
+version = "1.1.0"
+authors = [
+    {name = "Zach Lewis", email = "your.email@example.com"}
+]
+description = "A comprehensive, open-source rating system for Valorant player performance analysis"
+readme = "README.md"
+license = "AGPL-3.0"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+keywords = ["valorant", "esports", "rating", "performance", "analysis", "gaming"]
+dependencies = [
+    # Core dependencies - minimal for basic functionality
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "black",
+    "flake8",
+    "mypy",
+    "pre-commit",
+]
+full = [
+    # Additional dependencies for full functionality
+    # Add any specific packages your code needs here
+]
+
+[project.urls]
+Homepage = "https://github.com/zachlewis/OpenSoupRating"
+Repository = "https://github.com/zachlewis/OpenSoupRating"
+Issues = "https://github.com/zachlewis/OpenSoupRating/issues"
+Documentation = "https://github.com/zachlewis/OpenSoupRating#readme"
+
+[project.scripts]
+osr = "open_soup_rating.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["open_soup_rating*"]
+exclude = ["tests*", "archive*", "vlr_osr_comparison*"]
+
+[tool.setuptools.package-data]
+"open_soup_rating" = ["data/*.json"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | archive
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "--cov=open_soup_rating --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

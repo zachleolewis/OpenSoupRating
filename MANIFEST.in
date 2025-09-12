@@ -1,0 +1,23 @@
+# Include important documentation and configuration files
+include README.md
+include LICENSE
+include pyproject.toml
+
+# Include data files
+recursive-include data *.json
+recursive-include open_soup_rating/data *.json
+
+# Include sample data for testing/examples
+recursive-include sample_data *.json
+
+# Exclude unwanted files and directories
+exclude main.py
+exclude ratings_output.json
+recursive-exclude archive *
+recursive-exclude vlr_osr_comparison *
+recursive-exclude __pycache__ *
+recursive-exclude *.py[cod] *
+exclude .gitignore
+exclude .git*
+exclude *.log
+exclude *.tmp

@@ -153,7 +153,16 @@ This ensures that:
 - Python 3.8+
 - JSON match data from Riot Games API
 
-### Setup
+### Quick Installation (Recommended)
+
+Install directly from PyPI:
+```bash
+pip install open-soup-rating
+```
+
+### Development Setup
+
+For development or if you want to modify the source code:
 
 1. Clone the repository:
 ```bash
@@ -161,7 +170,7 @@ git clone https://github.com/zachleolewis/OpenSoupRating.git
 cd OpenSoupRating
 ```
 
-2. Install as a package:
+2. Install in development mode:
 ```bash
 pip install -e .
 ```
@@ -175,7 +184,22 @@ python main.py
 
 ### Command Line Interface
 
-Run the interactive calculator:
+#### Using the OSR command (after pip install):
+```bash
+# Calculate ratings from match data
+osr calculate match_data.json --output ratings.json
+
+# List available rating components
+osr list-components
+
+# Get version information
+osr version
+
+# See all options
+osr --help
+```
+
+#### Using the interactive calculator (development):
 ```bash
 python main.py
 ```
