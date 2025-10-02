@@ -6,7 +6,7 @@ import open_soup_rating as osr
 
 def test_package_import():
     """Test that the package imports correctly."""
-    assert osr.__version__ == "1.1.0"
+    assert osr.__version__ == "1.1.1"
     assert osr.__author__ == "Zach Lewis"
     assert osr.__license__ == "AGPL-3.0"
 
