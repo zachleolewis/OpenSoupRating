@@ -1,7 +1,7 @@
 # Open Soup Rating (OSR) - Open-Source Valorant Rating System
 # A modular, extensible rating system for Valorant player performance analysis.
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __author__ = "Zach Lewis"
 __license__ = "AGPL-3.0"
 __description__ = "A comprehensive, open-source rating system for Valorant player performance analysis"

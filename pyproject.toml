@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "open-soup-rating"
-version = "1.1.0"
+name = "OpenSoupRating"
+version = "1.1.1"
 authors = [
     {name = "Zach Lewis", email = "your.email@example.com"}
 ]
