@@ -1,5 +1,71 @@
 # Changelog
 
+## 2.1.0: OSR is Round Swing, with every round fully accounted for
+
+OSR's job is to credit what each player did in the matches being rated: one
+map, one series or a season. 2.0 instead blended Round Swing with kills,
+deaths and damage, weighted to predict a player's results in *other* matches.
+That traded accuracy about the match in front of you for long-run prediction,
+which is the wrong trade for this rating. 2.1 removes the blend and fills the
+gaps that kept Round Swing from adding up.
+
+### What was wrong in 2.0
+
+- **The headline rating described future matches, not this one.** Its weights
+  favoured whatever repeats across matches (damage, deaths), so a decisive clutch
+  counted for little in the rating of the map it decided.
+- **Win probability that moved without a kill went to nobody.** Defenders
+  holding as the round clock ran down, attackers sitting on a planted spike, and
+  the final resolution of each round (a spike detonating, a failed retake, time
+  running out) were unassigned. Mostly that short-changed players whose job is
+  to hold and survive rather than take fights.
+- **Plants and defuses were not zero-sum.** The planter gained, but nobody on
+  the other side lost anything, so team totals didn't match results.
+- **No series view, and season aggregates were shrunk by default.** That turned
+  "what happened" into "what we'd expect" without being asked.
+
+### What changed
+
+- `rating` is now exactly the player's Round Swing per round: KillSwing +
+  AssistSwing + DeathSwing + ObjectiveSwing + HoldSwing. There are no fitted
+  weights and no centring.
+- **New `HoldSwing` component.** Win probability that moves while no kill or
+  objective happens is shared by each side's alive players.
+- **Plants and defuses are now zero-sum.** The other side's alive players share
+  the plant or defuse they conceded (in `ObjectiveSwing`).
+- **Every round is fully accounted for.** Each team's credits sum exactly to
+  its round result minus its round-start win probability, and the two teams sum
+  to zero.
+- **New `find_series()` and `aggregate_ratings(by='series')`, plus
+  `osr calculate DIR --series`.** Series are detected from matching rosters
+  (4 of 5 players per side) with maps starting within 3 hours of each other. On
+  a month of pro matches, this matched an independent series table on all 393
+  same-series map pairs.
+- `aggregate_ratings()` is descriptive by default. It returns the
+  rounds-weighted rating, `rounds_added`, and a luck band (`rating_low` /
+  `rating_high`). `shrink=True` (`--shrink`) gives the player-level estimate
+  instead. It also accepts any custom grouping: `by={match_id: group}`.
+- Per-map results now include `rounds_added`, `plants`, `defuses`, `team`,
+  `map_id` and `game_start`. The 2.0-only fields `round_swing` and
+  `rating_breakdown` are removed: `rating` *is* Round Swing, and
+  `swing_per_round` is its breakdown.
+
+### Validation (2.1 vs 1.1.1)
+
+| | 1.1.1 | 2.1 | (K−D)/round |
+|---|---|---|---|
+| Team average vs. that map's round differential (r) | 0.909 | **0.975** | 0.949 |
+| Map winner has the higher team average | 92.8% | **98.6%** | — |
+| Gap between best and worst role average (fraction of map SD) | 0.171 | **0.063** | 0.245 |
+| Top 100 season ratings that are duelists (28% of players) | 50 | **40** | 64 |
+| Split-half stability (1,597 players with 40+ maps) | **0.676** | 0.598 | 0.750 |
+| Predicting held-out map winners (AUC) | 0.610 | 0.610 | 0.626 |
+
+2.1 describes matches more accurately and treats roles more evenly than 1.1.1
+or K−D. It is less stable from one set of maps to the next, because clutches
+and late-round plays are worth more and don't repeat evenly. Use `shrink=True`
+when you want a level estimate.
+
 ## 2.0.0 — Round Swing rewrite
 
 OSR 2.0 replaces the 1.x formula. An audit of 1.1.1 against 25,086 professional

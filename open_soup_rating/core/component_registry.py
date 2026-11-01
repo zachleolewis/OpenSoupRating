@@ -43,6 +43,7 @@ def load_builtin_components():
     """Load all built-in components."""
     from ..components.swing_components import (
         calculate_kill_swing, calculate_assist_swing, calculate_death_swing, calculate_objective_swing,
+        calculate_hold_swing,
     )
     from ..components.apr import calculate_apr
     from ..components.adra import calculate_adra
@@ -52,6 +53,7 @@ def load_builtin_components():
     register_component('AssistSwing', calculate_assist_swing)
     register_component('DeathSwing', calculate_death_swing)
     register_component('ObjectiveSwing', calculate_objective_swing)
+    register_component('HoldSwing', calculate_hold_swing)
 
     # Informational components: reported, not part of the rating
     register_component('APR', calculate_apr)

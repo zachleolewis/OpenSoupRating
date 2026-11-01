@@ -8,7 +8,7 @@ Riot match JSON files (.json or .json.gz, searched recursively).
 
 Writes:
   wp_model.json       logistic coefficients for P(attackers win round | state)
-  rating_params.json  rating weights, centring, role baselines and shrinkage constants
+  rating_params.json  role baselines and variance constants (luck bands, optional shrinkage)
 
 With --holdout 0.2 the newest 20% of maps (by game start) are held out, the
 model is scored on them, and then refitted on everything.
@@ -26,15 +26,14 @@ from pathlib import Path
 
 import numpy as np
 from sklearn.feature_extraction import DictVectorizer
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import brier_score_loss, log_loss
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from open_soup_rating.core.rounds import parse_match, RoundState, match_players  # noqa: E402
-from open_soup_rating.core.swing import compute_match_swing  # noqa: E402
+from open_soup_rating.core.swing import compute_match_swing, SWING_KINDS  # noqa: E402
 from open_soup_rating.core.win_probability import WinProbabilityModel, wp_features, wp_feature_names  # noqa: E402
 from open_soup_rating.core.game_content import agent_role  # noqa: E402
-from open_soup_rating.core.rating_model import RATING_FEATURES, rating_features, round_swing  # noqa: E402
 
 
 def load_json(path):
@@ -133,51 +132,32 @@ def player_maps(args):
     match = load_json(path)
     ledger = compute_match_swing(match, WinProbabilityModel(params))
     players = match_players(match)
-    start = match['matchInfo'].get('gameStartMillis', 0)
     out = []
     for puuid, entry in ledger.items():
         if entry['rounds'] == 0:
             continue
-        out.append({'puuid': puuid, 'start': start, 'rounds': entry['rounds'], 'swing': round_swing(entry),
-                    'role': agent_role(players[puuid].get('characterId')), **rating_features(entry)})
+        rating = 100.0 * sum(entry[k] for k in SWING_KINDS) / entry['rounds']
+        out.append((puuid, entry['rounds'], rating, agent_role(players[puuid].get('characterId'))))
     return out
 
 
-def fit_rating_weights(rows):
-    """
-    Weights that best predict a player's Round Swing in their other matches.
+def rating_constants(params, paths, workers):
+    """Role baselines and variance constants from every player-map."""
+    with Pool(workers) as pool:
+        chunks = pool.map(player_maps, [(p, params) for p in paths], chunksize=50)
+    rows = [r for chunk in chunks for r in chunk]
+    rounds = np.array([r[1] for r in rows], dtype=float)
+    value = np.array([r[2] for r in rows])
 
-    Each player's maps (in time order) are split alternately into two halves;
-    the per-round averages of the inputs in one half are regressed on the
-    Round Swing of the other half, in both directions, weighted by the rounds
-    available. Inputs that are mostly leverage luck get little weight; stable
-    skill signals get more. Only players with 10+ maps are used.
-    """
+    roles = {}
+    for role in sorted({r[3] for r in rows if r[3]}):
+        mask = np.array([r[3] == role for r in rows])
+        roles[role] = round(float(np.average(value[mask], weights=rounds[mask])), 4)
+
+    # Variance components: a map rating = player level + noise with variance sigma2 / rounds.
     by_player = {}
-    for r in sorted(rows, key=lambda r: r['start']):
-        by_player.setdefault(r['puuid'], []).append(r)
-    X, y, w = [], [], []
-    for maps_played in by_player.values():
-        if len(maps_played) < 10:
-            continue
-        means = []
-        for half in (maps_played[0::2], maps_played[1::2]):
-            n = sum(m['rounds'] for m in half)
-            means.append(({f: sum(m[f] * m['rounds'] for m in half) / n for f in RATING_FEATURES},
-                          sum(m['swing'] * m['rounds'] for m in half) / n, n))
-        for (feats, _, n_a), (_, target, n_b) in ((means[0], means[1]), (means[1], means[0])):
-            X.append([feats[f] for f in RATING_FEATURES])
-            y.append(target)
-            w.append(min(n_a, n_b))
-    model = LinearRegression().fit(np.array(X), np.array(y), sample_weight=np.array(w))
-    return {f: round(float(c), 5) for f, c in zip(RATING_FEATURES, model.coef_)}, float(model.intercept_), len(X) // 2
-
-
-def variance_components(rows, value):
-    """A map rating = true level + noise with variance sigma2 / rounds; estimate both parts."""
-    by_player = {}
-    for r, v in zip(rows, value):
-        by_player.setdefault(r['puuid'], []).append((r['rounds'], v))
+    for (puuid, n, v, _) in rows:
+        by_player.setdefault(puuid, []).append((n, v))
     within, between_means, between_noise = [], [], []
     for maps_played in by_player.values():
         if len(maps_played) < 10:
@@ -190,45 +170,15 @@ def variance_components(rows, value):
         between_noise.append(1.0 / np.sum(n))
     sigma2 = float(np.mean(within))
     tau2 = float(max(np.var(between_means) - sigma2 * np.mean(between_noise), 1e-6))
-    return sigma2, tau2
-
-
-def osr_value_from_features(row, constants):
-    return constants['intercept'] + sum(constants['rating_weights'][f] * row[f] for f in RATING_FEATURES)
-
-
-def rating_constants(params, paths, workers):
-    """Rating weights, centring, role baselines and shrinkage constants from every player-map."""
-    with Pool(workers) as pool:
-        chunks = pool.map(player_maps, [(p, params) for p in paths], chunksize=50)
-    rows = [r for chunk in chunks for r in chunk]
-    rounds = np.array([r['rounds'] for r in rows], dtype=float)
-
-    weights, intercept, players_used = fit_rating_weights(rows)
-    constants = {'rating_weights': weights, 'intercept': intercept}
-    value = np.array([osr_value_from_features(r, constants) for r in rows])
-    center = float(np.average(value, weights=rounds))
-    value = value - center
-    swing_center = float(np.average([r['swing'] for r in rows], weights=rounds))
-
-    roles = {}
-    for role in sorted({r['role'] for r in rows if r['role']}):
-        mask = np.array([r['role'] == role for r in rows])
-        roles[role] = round(float(np.average(value[mask], weights=rounds[mask])), 4)
-
-    sigma2, tau2 = variance_components(rows, value)
     return {
-        'rating_weights': weights,
-        'intercept': round(intercept - center, 5),
-        'swing_center': round(swing_center, 4),
+        'mean': round(float(np.average(value, weights=rounds)), 4),
         'role_baselines': roles,
         'shrinkage': {
-            'round_variance': round(sigma2, 3),
+            'round_variance': round(sigma2, 2),
             'true_variance': round(tau2, 4),
             'prior_rounds': round(sigma2 / tau2, 1),
         },
         'player_maps': len(rows),
-        'players_used_for_weights': players_used,
     }
 
 
@@ -284,7 +234,7 @@ def main():
         json.dump(params, f, indent=1)
 
     constants = rating_constants(params, paths, args.workers)
-    constants['metadata'] = dict(params['metadata'], description='Rating weights, centring, role baselines and shrinkage')
+    constants['metadata'] = dict(params['metadata'], description='Role baselines and variance constants')
     with open(out / 'rating_params.json', 'w', encoding='utf-8') as f:
         json.dump(constants, f, indent=2)
     print(json.dumps({k: v for k, v in constants.items() if k != 'metadata'}, indent=2))

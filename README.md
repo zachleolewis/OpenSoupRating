@@ -2,19 +2,21 @@
 
 An open-source rating system for Valorant player performance. OSR measures how
 much each player moved their team's chance of winning rounds. It credits the
-kills, assists, trades, deaths, plants and defuses that changed the round, and
-reports everything in one unit you can read directly.
+kills, assists, trades, deaths, plants, defuses and holds that changed each
+round, and reports everything in one unit that reads the same for a map, a
+series or a season.
 
-> **2.0 is a rewrite.** Version 1.1.1 had bugs that corrupted most ratings
+> **2.x is a rewrite.** Version 1.1.1 had bugs that corrupted most ratings
 > (sides swapped in about half of all rounds, the spike always treated as
 > planted, broken economy lookups, and pip installs that couldn't find their
-> data). See [CHANGELOG.md](CHANGELOG.md) for what was wrong and how 2.0 was
-> validated.
+> data). See [CHANGELOG.md](CHANGELOG.md) for what was wrong and how the new
+> version was validated.
 
 ## Table of Contents
 
 - [How OSR Works](#how-osr-works)
 - [Reading the Numbers](#reading-the-numbers)
+- [Maps, Series and Seasons](#maps-series-and-seasons)
 - [Validation](#validation)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -44,82 +46,95 @@ It's a logistic model fitted on round states from 25,086 professional maps
 from fitting, its log loss is 0.452. The 1.x lookup table scored 0.491 as
 shipped and 0.479 even when used correctly.
 
-### 2. Round Swing
+### 2. Round Swing: every change in win probability goes to someone
 
-OSR walks through every round in time order and books the change in win
-probability caused by each event:
+OSR walks through every round in time order and credits each change in win
+probability to the players responsible:
 
-| Event | Who gets the swing |
+| Component | What it credits |
 |---|---|
-| Kill | The killing team's gain is split: the killer gets 50 + their damage on the victim; teammates who damaged the victim get their damage; utility-only assisters (flashes, stuns, reveals) get 30; teammates the victim killed within the last 3 s (traded deaths) get 30. |
-| Death | The victim is charged the full loss for their team. |
-| Plant | The planter gets the attackers' gain from getting the spike down. |
-| Defuse | The defuser gets the defenders' remaining gain. |
+| **KillSwing** | The killer's share of the win probability a kill gained. |
+| **AssistSwing** | Teammates' shares of that kill. Credit is split by: the killer gets 50 + their damage on the victim; teammates who damaged the victim get their damage; utility-only assisters (flashes, stuns, reveals) get 30; a teammate the victim killed within the last 3 s (a traded death) gets 30. |
+| **DeathSwing** | The full loss the player's team took when they died. |
+| **ObjectiveSwing** | The planter's or defuser's gain; the other side's alive players share the plant or defuse they conceded. |
+| **HoldSwing** | Win probability that moved while nobody got a kill or objective, shared by each side's alive players. This covers defenders holding as the round clock runs, attackers sitting on a planted spike, and the final resolution of the round (a spike holding to detonation, a failed retake, time running out). |
 
-Kills are zero-sum: what one team gains, the other loses. Kills after the round
-was decided (exit frags after a detonation, and so on) change nothing and count
-for nothing.
+**The rating is the sum of these five components, per round.** Nothing is
+weighted or rescaled.
 
-Per player, this gives four components: **KillSwing, AssistSwing, DeathSwing
-and ObjectiveSwing**. Their sum is the player's **Round Swing**, a faithful
-record of what happened in that match.
+Everything is zero-sum. In every round, a team's credits add up exactly to its
+result minus its win probability when the round started. Kills after the round
+was decided (exit frags after a detonation, and so on) change nothing and
+count for nothing.
 
-### 3. OSR
-
-Round Swing is accurate but noisy. A clutch kill and an opening kill take the
-same aim, yet one carries far more win probability. Sports analytics has the
-same split: baseball's win probability added describes a game, but rate stats
-predict a player better. OSR therefore combines:
-
-- the four Round Swing components
-- kills and deaths per round
-- damage dealt and damage taken per round
-
-Each input is weighted by how well it predicts the player's Round Swing in
-*other* matches (`rating_weights` in `open_soup_rating/data/rating_params.json`,
-fitted by `tools/calibrate.py`). Inputs that are mostly leverage luck get little
-weight; stable skill signals get more. The result stays in Round Swing units.
-
-Because kills and damage move together, individual weights can shift a lot
-between calibrations while the rating barely changes. Read
-`rating_breakdown` as a whole rather than one weight at a time.
+Because the round starts from each team's actual economy, winning an eco round
+is worth a lot and beating an eco is worth little. Killing a player with a
+rifle and heavy shields moves the round more than killing one on a pistol.
 
 ## Reading the Numbers
 
 Every rating is in **percentage points of a round won per round played**, with
 **0 = the average player**.
 
-- `rating` = **+2.0**: this performance is worth about 2% more round wins per
-  round than an average player would add. Over a 24-round map, that's roughly
-  half a round.
-- `round_swing`: the same unit, but literally what happened in this match.
+- `rating` = **+5.0**: over these rounds, the player added 5% of a round-win
+  per round. Over a 24-round map, that's 1.2 rounds.
+- `rounds_added`: the same thing as a total, in rounds.
 - `role_adjusted_rating`: `rating` relative to the average player on the same
-  role (duelist, initiator, controller, sentinel).
+  role. Role averages are close together: the spread between them is about
+  0.3 points, against a single-map spread of about 4.8.
 
-A single map is mostly noise: the spread of single-map ratings is several times
-the spread of true player levels. When rating players, aggregate across matches
-with `aggregate_ratings()` (or `osr calculate DIR --aggregate`). It shrinks each
-player toward average according to how many rounds they've played: about 200
-rounds count as much as the prior. It also returns a 90% interval.
+The five components always add up to `rating`, and a team's `rounds_added`
+add up to how many more rounds it won than its round-start chances predicted.
+
+## Maps, Series and Seasons
+
+OSR is the same quantity at every level, just over more rounds:
+
+```python
+ratings = osr.calculate_rating_with_player_info("matches/")    # one entry per player per map
+
+season  = osr.aggregate_ratings(ratings)                        # one entry per player
+series  = osr.aggregate_ratings(ratings, by="series")           # one entry per player per series
+events  = osr.aggregate_ratings(ratings, by={match_id: "Masters", ...})  # any grouping you like
+```
+
+- **Series** are found automatically. Maps belong together when both rosters
+  match (at least 4 of 5 players on each side) and each map starts within
+  3 hours of the previous one. `osr.find_series(ratings)` returns the grouping.
+- **Luck band.** `rating_low` and `rating_high` show how far the rating could
+  move from round-to-round luck alone (90% by default). On one map that band is
+  wide; over a season it narrows.
+- **What happened vs. how good.** The rating describes what happened.
+  `shrink=True` (or `--shrink` on the CLI) instead estimates the player's
+  underlying level, pulling small samples toward average. Use it for
+  questions like "who is better", not "who played better".
 
 ## Validation
 
-All of these numbers come from fitting on maps before 2026-04-06 and testing on
-the 5,018 maps after it.
+The table compares how well each rating reflects the maps it describes, and
+how well it carries over to other maps. Ratings use the win probability model
+fitted on maps before 2026-04-06. Stability and prediction are scored on the
+5,018 maps after that date.
 
-| | 1.1.1 | 2.0 OSR | 2.0 Round Swing | (K−D)/round |
-|---|---|---|---|---|
-| Split-half reliability (1,597 players with 40+ maps) | 0.676 | **0.733** | 0.593 | 0.750 |
-| Predicting held-out map winners from earlier ratings (AUC) | 0.610 | **0.619** | 0.594 | 0.626 |
-| Team average vs same-map round differential (r) | 0.909 | **0.940** | 0.922 | 0.949 |
+| | 1.1.1 | 2.1 | (K−D)/round |
+|---|---|---|---|
+| Team average vs. that map's round differential (r) | 0.909 | **0.975** | 0.949 |
+| Map winner has the higher team average | 92.8% | **98.6%** | — |
+| Gap between best and worst role average (fraction of map SD) | 0.171 | **0.063** | 0.245 |
+| Split-half stability (1,597 players with 40+ maps) | **0.676** | 0.598 | 0.750 |
+| Predicting held-out map winners from earlier ratings (AUC) | 0.610 | 0.610 | 0.626 |
 
-OSR 2.0 is better than 1.1.1 on every measure. The reliability gain is clear:
-+0.057, 95% CI [+0.037, +0.078]. Plain (K−D)/round remains slightly more
-stable and slightly more predictive of future results (−0.018 reliability,
-−0.007 AUC). OSR's added value is attribution: it shows *where* a player's
-impact came from (opening kills vs. clean-up, assists, trades, objectives) in
-a unit you can read, not raw predictive power. Adjusting for opponent strength
-is the most promising next step.
+**How to read this:**
+
+- 2.1 is built to describe what happened, and it does that best.
+- It is the most role-balanced of the three. Among the top 100 season ratings
+  (players with 40+ maps), 40 are duelists against 28% of players overall. With
+  1.1.1 it was 50, with K−D 64, and with ACS 94. The bottom 100 roughly match
+  the population.
+- It is less stable from one set of maps to the next than 1.1.1 or K−D. That
+  follows directly from describing what happened: clutches and late-round
+  plays really are worth more, and they don't repeat evenly. For an estimate of
+  player level, use `shrink=True` over many maps.
 
 ## Installation
 
@@ -147,17 +162,21 @@ pytest
 ### Command Line Interface
 
 ```bash
-# Rate every player in one match
+# Rate every player in one map
 osr calculate match.json --pretty
 
-# Rate a folder of matches (.json or .json.gz) and save per-match results
+# Rate a folder of maps (.json or .json.gz) and save per-map results
 osr calculate matches/ --output ratings.json
 
-# One shrunk rating per player across all matches, best first
+# One rating per player per series
+osr calculate matches/ --series --pretty
+
+# One rating per player over everything given (e.g. a season), best first
 osr calculate matches/ --aggregate --pretty
 
-# Same, relative to each player's role
+# Relative to role, or as a level estimate
 osr calculate matches/ --aggregate --role-adjusted
+osr calculate matches/ --aggregate --shrink
 
 # List components / version
 osr list-components
@@ -169,48 +188,47 @@ osr version
 ```python
 import open_soup_rating as osr
 
-# Per-match ratings with names and box scores
 ratings = osr.calculate_rating_with_player_info("matches/")
-
-# One rating per player across all matches
-players = osr.aggregate_ratings(ratings)
-for puuid, p in sorted(players.items(), key=lambda kv: -kv[1]['rating'])[:10]:
-    print(f"{p['name']:24s} {p['rating']:+.2f}  [{p['rating_low']:+.2f}, {p['rating_high']:+.2f}]  {p['maps']} maps")
+season = osr.aggregate_ratings(ratings)
+for p in sorted(season.values(), key=lambda p: -p['rating'])[:10]:
+    print(f"{p['name']:24s} {p['rating']:+.2f}  ({p['rounds_added']:+.1f} rounds over {p['maps']} maps)")
 ```
 
 ## Output
 
-`calculate_rating` returns one entry per player per match, keyed
+`calculate_rating` returns one entry per player per map, keyed
 `"{puuid}_{matchId}"`:
 
 ```python
 {
-  "rating": 1.84,                  # OSR, percentage points of a round won per round (0 = average)
-  "role_adjusted_rating": 1.91,    # relative to the player's role
-  "round_swing": 3.10,             # what actually happened, same unit
-  "swing_per_round": {             # the four Round Swing components
-    "KillSwing": 12.4, "AssistSwing": 1.6, "DeathSwing": -10.2, "ObjectiveSwing": 0.2
+  "rating": 4.21,                  # Round Swing per round, % of a round won (0 = average)
+  "role_adjusted_rating": 4.31,    # relative to the player's role
+  "rounds_added": 0.93,            # the same as a total, in rounds
+  "swing_per_round": {             # the five components; they sum to "rating"
+    "KillSwing": 12.4, "AssistSwing": 1.6, "DeathSwing": -10.2,
+    "ObjectiveSwing": 0.3, "HoldSwing": 0.1
   },
-  "rating_breakdown": {...},       # each input's contribution; sums exactly to "rating"
   "components": {...},             # every registered component, incl. APR and ADRa
   "rounds_played": 22, "kills": 19, "deaths": 14, "assists": 5,
-  "traded_deaths": 4, "first_kills": 4, "first_deaths": 2, "kast": 0.77, "adr": 151.2,
-  "agent": "Jett", "role": "Duelist",
-  "puuid": "...", "match_id": "..."
+  "traded_deaths": 4, "first_kills": 4, "first_deaths": 2, "plants": 1, "defuses": 0,
+  "kast": 0.77, "adr": 151.2,
+  "agent": "Jett", "role": "Duelist", "team": "Red",
+  "puuid": "...", "match_id": "...", "map_id": "/Game/Maps/Ascent/Ascent", "game_start": 1730000000000
 }
 ```
 
 `calculate_rating_with_player_info` adds a `player_info` block (name, tag and
 Riot box score).
 
-`aggregate_ratings` returns one entry per player:
+`aggregate_ratings` returns one entry per player (and per group, when grouped):
 
 ```python
 {
-  "name": "Player#TAG", "maps": 14, "rounds_played": 312, "main_role": "Initiator",
-  "raw_rating": 2.71,              # rounds-weighted average of per-match ratings
-  "rating": 1.65,                  # shrunk toward average by sample size
-  "rating_low": 0.53, "rating_high": 2.77   # 90% interval
+  "name": "Player#TAG", "maps": 3, "rounds_played": 68, "main_role": "Initiator",
+  "rating": 2.71,                  # Round Swing per round over these rounds
+  "rounds_added": 1.84,
+  "rating_low": -1.31, "rating_high": 6.73,   # 90% luck band
+  "group": "<series id>"           # when grouped
 }
 ```
 
@@ -221,7 +239,8 @@ Riot box score).
 | `KillSwing` | Killer's share of the win probability gained by their kills | yes |
 | `AssistSwing` | Share of teammates' kills earned through damage, utility assists and being traded | yes |
 | `DeathSwing` | Win probability the team lost when the player died (negative) | yes |
-| `ObjectiveSwing` | Win probability gained by planting or defusing | yes |
+| `ObjectiveSwing` | Plants and defuses made, less a share of those conceded | yes |
+| `HoldSwing` | Share of win probability that moved while alive with no kill or objective | yes |
 | `APR` | Assists per round | reported only |
 | `ADRa` | Damage beyond what the player's own kills needed, per round | reported only |
 
@@ -236,14 +255,14 @@ pip install -e .[calibrate]
 python tools/calibrate.py path/to/matches --holdout 0.2 --workers 8
 ```
 
-This rewrites `open_soup_rating/data/wp_model.json` and `rating_params.json`.
-Options:
+This rewrites `open_soup_rating/data/wp_model.json` (the win probability model)
+and `rating_params.json` (role averages and the variance behind luck bands and
+shrinkage). Options:
 - `--min-patch` sets the oldest patch to use (default 8.0).
 - `--before YYYY-MM-DD` fits only on older maps, for backtests.
 - `--out DIR` writes somewhere else.
 
-You can then pass that directory as `config_path` to use it without
-overwriting the defaults:
+To use a calibration without overwriting the defaults:
 
 ```python
 osr.calculate_rating("matches/", config_path="my_calibration/")
@@ -262,14 +281,13 @@ OpenSoupRating/
 │   │   ├── rounds.py                # Match parsing: sides, events, round end
 │   │   ├── win_probability.py       # Round win probability model
 │   │   ├── swing.py                 # Round Swing ledger and kill-credit split
-│   │   ├── rating_model.py          # Rating inputs and weights
-│   │   ├── rating_calculator.py     # calculate_rating, aggregate_ratings, get_components
+│   │   ├── rating_calculator.py     # calculate_rating, aggregate_ratings, find_series, get_components
 │   │   ├── game_content.py          # Agent roles and armor values
 │   │   └── component_registry.py    # Component registration
-│   ├── components/                  # KillSwing, AssistSwing, DeathSwing, ObjectiveSwing, APR, ADRa
+│   ├── components/                  # Swing components, APR, ADRa
 │   ├── data/
 │   │   ├── wp_model.json            # Win probability coefficients
-│   │   ├── rating_params.json       # Rating weights, centring, role baselines, shrinkage
+│   │   ├── rating_params.json       # Role averages and variance constants
 │   │   ├── game_content.json        # Agent → role, armor UUID → shield value
 │   │   └── loader.py                # Match loading (.json / .json.gz)
 │   └── utils/                       # Configuration and validation
@@ -280,11 +298,12 @@ OpenSoupRating/
 
 ### Core Functions
 
-- `calculate_rating(match_data, components_to_use=None, config_path=None, wp_model=None)` returns per-match ratings.
+- `calculate_rating(match_data, components_to_use=None, config_path=None, wp_model=None)` returns per-map ratings.
 - `calculate_rating_with_player_info(...)` does the same, plus name, tag and box score.
-- `aggregate_ratings(ratings, role_adjusted=False, interval=0.9)` returns one shrunk rating per player.
+- `aggregate_ratings(ratings, by=None, role_adjusted=False, interval=0.9, shrink=False)` combines maps into series, seasons or any grouping.
+- `find_series(ratings)` returns `{match_id: series_id}`.
 - `get_components(match_data, component_names=None)` returns raw component values only.
-- `compute_match_swing(match)` returns the raw Round Swing ledger for one match.
+- `compute_match_swing(match)` returns the raw Round Swing ledger for one map.
 - `WinProbabilityModel.load(path=None)` loads the win probability model, for your own analysis.
 
 `match_data` can be a file, a directory, a match dict or a list of match dicts.
@@ -310,14 +329,14 @@ osr.add_component("HeadshotRate", calculate_headshot_rate)
 ratings = osr.calculate_rating("match.json")   # components now include HeadshotRate
 ```
 
-Components also receive `swing` (the match's Round Swing ledger) and `parsed`
+Components also receive `swing` (the map's Round Swing ledger) and `parsed`
 (the parsed rounds) as keyword arguments.
 
 ## Data Requirements
 
 OSR reads Riot Games API match JSON. It uses:
 
-- `matchInfo.matchId` and `matchInfo.mapId`
+- `matchInfo.matchId`, `matchInfo.mapId` and `matchInfo.gameStartMillis`
 - `players[]`: `puuid`, `teamId`, `characterId`, `stats`; observers are ignored
 - `roundResults[]`:
   - `roundNum`, `winningTeam`, `roundResultCode`
@@ -328,13 +347,20 @@ OSR reads Riot Games API match JSON. It uses:
 
 ## Limitations
 
-- **No opponent adjustment.** A player who farms weaker teams looks better than
-  they are. Compare players who faced similar opposition.
+- **Utility is only partly visible.** Riot's data shows utility through
+  assists and damage, not smokes, walls or information. Controller and
+  sentinel value that never touches a kill shows up only through HoldSwing
+  (their team's chances while they're alive). This is the main reason
+  controllers are under-represented at the very top of season rankings.
+- **HoldSwing is shared equally** among alive players. It credits being alive
+  while your side's chances improve; it can't tell which alive player made that
+  happen.
+- **No opponent adjustment.** Rating well against weaker teams counts the same
+  as against stronger ones.
 - **Position isn't used.** Kill and plant locations are in the data, but the
   win probability model doesn't use them yet.
-- **Ultimates and utility aren't observed** beyond utility assists.
-- **Calibration population matters.** The default constants come from pro play.
-  Recalibrate for other levels.
+- **Calibration population matters.** The default constants come from pro
+  play. Recalibrate for other levels.
 
 ## Contributing
 

@@ -4,7 +4,7 @@ import pytest
 
 import open_soup_rating as osr
 from open_soup_rating.core.rounds import determine_attackers, parse_match
-from open_soup_rating.core.swing import compute_match_swing
+from open_soup_rating.core.swing import compute_match_swing, SWING_KINDS
 from open_soup_rating.components.adra import calculate_adra
 
 RED = [f'r{i}' for i in range(5)]
@@ -34,13 +34,16 @@ def make_round(num, winner, kills=(), plant=None, defuse=None, damage=(), code='
     return r
 
 
-def make_match(rounds):
+def make_match(rounds, match_id='m1', start=0, extra=()):
+    """extra: puuids replacing the last players of Blue (a different opponent)."""
+    blue = BLUE[:5 - len(extra)] + list(extra)
     players = [{'puuid': p, 'teamId': 'Red' if p in RED else 'Blue', 'characterId': JETT, 'gameName': p,
                 'tagLine': 'T', 'stats': {'kills': 0, 'deaths': 0, 'assists': 0, 'roundsPlayed': len(rounds), 'score': 0}}
-               for p in RED + BLUE]
+               for p in RED + blue]
     players.append({'puuid': 'obs', 'teamId': 'Neutral', 'isObserver': True, 'stats': {}})
-    return {'matchInfo': {'matchId': 'm1', 'mapId': '/Game/Maps/Ascent/Ascent'}, 'players': players,
-            'teams': [{'teamId': 'Red', 'won': True}, {'teamId': 'Blue', 'won': False}], 'roundResults': rounds}
+    return {'matchInfo': {'matchId': match_id, 'mapId': '/Game/Maps/Ascent/Ascent', 'gameStartMillis': start},
+            'players': players, 'teams': [{'teamId': 'Red', 'won': True}, {'teamId': 'Blue', 'won': False}],
+            'roundResults': rounds}
 
 
 def wipe(killers, victims, start=10_000):
@@ -107,6 +110,34 @@ def test_kills_are_zero_sum():
     assert ledger['r0']['kills'] == 1 and ledger['b0']['deaths'] == 1
 
 
+def test_every_round_is_fully_accounted_for():
+    """Each team's credits add up to (round result - win probability at round start)."""
+    rounds = [
+        make_round(0, 'Red', kills=[(10_000, 'r0', 'b0'), (12_000, 'b1', 'r1')], plant=(30_000, 'r2'),
+                   code='Detonate'),
+        make_round(1, 'Blue', kills=[(15_000, 'b0', 'r0'), (16_000, 'r3', 'b0', ['r4'])]),
+        make_round(2, 'Blue', kills=[(5_000, 'r0', 'b4')], plant=(40_000, 'r1'), defuse=(70_000, 'b2'), code='Defuse'),
+    ]
+    model = RecordingModel()
+    ledger = compute_match_swing(make_match(rounds), model)
+    start = model.attack_win_probability({'atk_alive': 5, 'def_alive': 5, 'planted': False})
+    red_attacking_result = sum([1, 0, 0]) - 3 * start
+    red = sum(sum(e[k] for k in SWING_KINDS) for p, e in ledger.items() if p in RED)
+    blue = sum(sum(e[k] for k in SWING_KINDS) for p, e in ledger.items() if p in BLUE)
+    assert red == pytest.approx(red_attacking_result)
+    assert red + blue == pytest.approx(0.0)
+
+
+def test_holding_a_planted_spike_earns_hold_credit():
+    kills = [(10_000, 'r0', 'b0')]
+    match = make_match([make_round(0, 'Red', kills=kills, plant=(30_000, 'r1'), code='Detonate')])
+    ledger = compute_match_swing(match, RecordingModel())
+    assert all(ledger[p]['hold'] > 0 for p in RED)
+    assert all(ledger[p]['hold'] < 0 for p in BLUE if p != 'b0')
+    # the plant is conceded by the defenders still alive
+    assert ledger['b1']['objective'] < 0 and ledger['b0']['objective'] == 0
+
+
 def test_kill_credit_is_split_by_damage():
     kills = [(10_000, 'r0', 'b0')]
     damage = [('r1', 'b0', 120), ('r0', 'b0', 30)]
@@ -136,8 +167,11 @@ def test_plant_and_defuse_are_credited():
     match = make_match([make_round(0, 'Blue', kills=kills, plant=(30_000, 'r1'), defuse=(60_000, 'b2'),
                                    code='Defuse')])
     ledger = compute_match_swing(match, RecordingModel())
-    assert ledger['r1']['objective'] > 0
+    # attackers alive at the defuse share the conceded defuse; the planter also has the plant
+    assert ledger['r1']['objective'] > ledger['r0']['objective']
+    assert ledger['r0']['objective'] < 0
     assert ledger['b2']['objective'] > 0
+    assert ledger['r1']['plants'] == 1 and ledger['b2']['defuses'] == 1
 
 
 def test_kills_after_the_round_is_decided_are_ignored():
@@ -164,16 +198,39 @@ def test_rating_end_to_end_and_aggregation():
     ratings = osr.calculate_rating_with_player_info(make_match(rounds))
     assert len(ratings) == 10  # observers excluded
     top = ratings['r0_m1']
-    assert set(top['swing_per_round']) == {'KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing'}
+    assert set(top['swing_per_round']) == {'KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing', 'HoldSwing'}
     assert top['rating'] > 0 > ratings['b0_m1']['rating']
-    assert top['round_swing'] > 0 > ratings['b0_m1']['round_swing']
-    # the breakdown adds up exactly to the rating
-    assert sum(top['rating_breakdown'].values()) == pytest.approx(top['rating'])
+    # the components add up exactly to the rating, and ratings to rounds added
+    assert sum(top['swing_per_round'].values()) == pytest.approx(top['rating'])
+    assert top['rounds_added'] == pytest.approx(top['rating'] * 6 / 100)
     assert top['role'] == 'Duelist' and top['agent'] == 'Jett'
-    agg = osr.aggregate_ratings(ratings)
-    # six rounds of evidence: heavily shrunk toward zero but same sign
-    assert 0 < agg['r0']['rating'] < agg['r0']['raw_rating']
-    assert agg['r0']['rating_low'] < agg['r0']['rating'] < agg['r0']['rating_high']
+    # the average player is 0
+    assert sum(r['rating'] for r in ratings.values()) == pytest.approx(0.0, abs=1e-9)
+
+    season = osr.aggregate_ratings(ratings)
+    # descriptive by default: exactly the player's rating over these rounds
+    assert season['r0']['rating'] == pytest.approx(top['rating'])
+    assert season['r0']['rating_low'] < season['r0']['rating'] < season['r0']['rating_high']
+    shrunk = osr.aggregate_ratings(ratings, shrink=True)
+    assert 0 < shrunk['r0']['rating'] < season['r0']['rating']
+
+
+def test_series_grouping():
+    rounds = [make_round(i, 'Red', kills=wipe(RED, BLUE)) for i in range(3)]
+    hour = 60 * 60 * 1000
+    matches = [
+        make_match(rounds, 'map1', start=0),
+        make_match(rounds, 'map2', start=hour),
+        make_match(rounds, 'map3', start=2 * hour, extra=['sub']),     # one substitute: same series
+        make_match(rounds, 'other', start=2 * hour, extra=['x1', 'x2', 'x3']),  # a different opponent
+        make_match(rounds, 'map4', start=9 * hour),                      # next day's series
+    ]
+    ratings = osr.calculate_rating(matches)
+    series = osr.find_series(ratings)
+    assert series['map1'] == series['map2'] == series['map3'] == 'map1'
+    assert series['other'] == 'other' and series['map4'] == 'map4'
+    per_series = osr.aggregate_ratings(ratings, by='series')
+    assert per_series['r0_map1']['maps'] == 3 and per_series['r0_map1']['group'] == 'map1'
 
 
 def test_legacy_weights_argument_warns():

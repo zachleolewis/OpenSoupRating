@@ -44,7 +44,7 @@ def validate_component_data(component_data: Dict[str, Any]) -> None:
         raise ValueError("Component data must be a dictionary")
 
     # Check for required component keys
-    expected_components = ['KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing']
+    expected_components = ['KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing', 'HoldSwing']
     for comp in expected_components:
         if comp not in component_data:
             print(f"Warning: Missing component {comp}")

@@ -1,11 +1,11 @@
 # Main Rating Calculator - Core OSR calculation logic
 #
-# Every result carries two numbers in the same unit (percentage points of a
-# round won per round, 0 = average player):
-#   round_swing  what happened: the win probability the player actually added
-#   rating (OSR) the player's level: Round Swing combined with kills, deaths
-#                and damage, weighted by how well each predicts Round Swing
-#                in other matches (see core/rating_model.py)
+# OSR is the player's Round Swing per round: the round win probability they
+# added or cost their team, in percentage points of a round per round played,
+# with 0 = average. The ledger accounts for every change in win probability,
+# so a team's ratings add up to its round results relative to where each round
+# started. Ratings for a map, a series or a season are the same quantity over
+# more rounds.
 
 import math
 import warnings
@@ -16,7 +16,6 @@ from typing import Dict, List, Any, Optional, Union
 from .component_registry import get_component, list_components
 from .game_content import agent_name, agent_role
 from .rounds import parse_match
-from .rating_model import rating_features, rating_terms, round_swing
 from .swing import compute_match_swing
 from .win_probability import WinProbabilityModel, default_model
 from ..data.loader import load_config_data, load_match_data
@@ -28,7 +27,12 @@ SWING_COMPONENTS = {
     'AssistSwing': 'assist',
     'DeathSwing': 'death',
     'ObjectiveSwing': 'objective',
+    'HoldSwing': 'hold',
 }
+
+# Maps of one series: the same two rosters (4 of 5 players each) starting within this long of the previous map.
+SERIES_GAP_MS = 3 * 60 * 60 * 1000
+SERIES_MIN_OVERLAP = 4
 
 
 def _load_matches(match_data: Union[str, Path, Dict, List[Dict]]) -> List[Dict[str, Any]]:
@@ -54,8 +58,8 @@ def _resolve_config(config_path: Optional[Union[str, Path]], kwargs: Dict[str, A
             config.update(load_config_data(path))
     for legacy in ('weights', 'normalization_params'):
         if kwargs.pop(legacy, None) is not None:
-            warnings.warn(f"'{legacy}' is no longer used: OSR 2 weights are fitted by tools/calibrate.py "
-                          "and need no normalization.", DeprecationWarning, stacklevel=3)
+            warnings.warn(f"'{legacy}' is no longer used: OSR 2 is Round Swing per round and "
+                          "needs no weights or normalization.", DeprecationWarning, stacklevel=3)
     return config
 
 
@@ -74,7 +78,8 @@ def _match_components(match: Dict[str, Any], component_names: List[str], wp_mode
     parsed = parse_match(match)
     ledger = compute_match_swing(match, wp_model, credit, parsed=parsed)
     damage_data = _extract_damage_data(match)
-    match_id = match['matchInfo']['matchId']
+    info = match['matchInfo']
+    match_id = info['matchId']
 
     results = {}
     for puuid, player in parsed['players'].items():
@@ -98,8 +103,10 @@ def _match_components(match: Dict[str, Any], component_names: List[str], wp_mode
             except Exception as e:
                 warnings.warn(f"Failed to calculate {name} for {puuid}_{match_id}: {e}")
                 components[name] = 0.0
-        results[f"{puuid}_{match_id}"] = {'player': player, 'match_id': match_id, 'ledger': entry,
-                                          'components': components}
+        results[f"{puuid}_{match_id}"] = {
+            'player': player, 'match_id': match_id, 'ledger': entry, 'components': components,
+            'team': player['teamId'], 'map_id': info.get('mapId'), 'game_start': info.get('gameStartMillis'),
+        }
     return results
 
 
@@ -137,32 +144,36 @@ def get_components(
 
 def _rate(row: Dict[str, Any], params: Dict[str, Any]) -> Dict[str, Any]:
     entry = row['ledger']
-    features = rating_features(entry)
-    terms = rating_terms(features, params)
-    rating = params['intercept'] + sum(terms.values())
+    rounds = entry['rounds']
+    swing = {name: 100.0 * entry[kind] / rounds for name, kind in SWING_COMPONENTS.items()}
+    rating = sum(swing.values())
     character_id = row['player'].get('characterId')
     role = agent_role(character_id)
     role_baseline = params['role_baselines'].get(role, 0.0) if role else 0.0
     return {
         'rating': rating,
         'role_adjusted_rating': rating - role_baseline,
-        'round_swing': round_swing(entry) - params['swing_center'],
-        'swing_per_round': {name: features[name] for name in SWING_COMPONENTS},
-        'rating_breakdown': dict(terms, intercept=params['intercept']),
+        'rounds_added': rating * rounds / 100.0,
+        'swing_per_round': swing,
         'components': row['components'],
-        'rounds_played': entry['rounds'],
+        'rounds_played': rounds,
         'kills': entry['kills'],
         'deaths': entry['deaths'],
         'assists': entry['assists'],
         'traded_deaths': entry['traded_deaths'],
         'first_kills': entry['first_kills'],
         'first_deaths': entry['first_deaths'],
-        'kast': entry['kast'] / entry['rounds'],
-        'adr': entry['damage_dealt'] / entry['rounds'],
+        'plants': entry['plants'],
+        'defuses': entry['defuses'],
+        'kast': entry['kast'] / rounds,
+        'adr': entry['damage_dealt'] / rounds,
         'agent': agent_name(character_id),
         'role': role,
         'puuid': row['player']['puuid'],
+        'team': row['team'],
         'match_id': row['match_id'],
+        'map_id': row['map_id'],
+        'game_start': row['game_start'],
     }
 
 
@@ -223,55 +234,99 @@ def calculate_rating_with_player_info(
     return ratings
 
 
-def aggregate_ratings(ratings: Dict[str, Any], config_path: Optional[Union[str, Path]] = None,
-                      role_adjusted: bool = False, interval: float = 0.9) -> Dict[str, Any]:
+def find_series(ratings: Dict[str, Any]) -> Dict[str, str]:
     """
-    Combine per-match ratings into one rating per player, shrunk toward the
-    average in proportion to how few rounds they have played.
+    Group maps into series: {match_id: series_id}.
 
-    A single map is mostly noise; the shrinkage constant (prior_rounds) is the
-    number of rounds at which a player's own record and the population average
-    get equal weight. Returns {puuid: {...}} with the raw per-round average,
-    the shrunk rating and a credible interval.
+    Two maps belong to the same series when both rosters match (at least 4 of
+    5 players on each side) and the later map starts within 3 hours of the
+    previous one. The series id is the match id of its first map.
+    """
+    rosters: Dict[str, Dict[str, Any]] = {}
+    for result in ratings.values():
+        m = rosters.setdefault(result['match_id'], {'start': result.get('game_start') or 0, 'teams': {}})
+        m['teams'].setdefault(result['team'], set()).add(result['puuid'])
+
+    def same_rosters(a, b):
+        teams_b = list(b['teams'].values())
+        return all(any(len(roster & other) >= SERIES_MIN_OVERLAP for other in teams_b) for roster in a['teams'].values())
+
+    series: Dict[str, str] = {}
+    open_series: List[tuple] = []  # (series_id, last map)
+    for match_id, m in sorted(rosters.items(), key=lambda kv: kv[1]['start']):
+        open_series = [(sid, last) for sid, last in open_series if m['start'] - last['start'] <= SERIES_GAP_MS]
+        for i, (sid, last) in enumerate(open_series):
+            if same_rosters(m, last):
+                series[match_id] = sid
+                open_series[i] = (sid, m)
+                break
+        else:
+            series[match_id] = match_id
+            open_series.append((match_id, m))
+    return series
+
+
+def aggregate_ratings(ratings: Dict[str, Any], by: Optional[Union[str, Dict[str, str]]] = None,
+                      config_path: Optional[Union[str, Path]] = None, role_adjusted: bool = False,
+                      interval: float = 0.9, shrink: bool = False) -> Dict[str, Any]:
+    """
+    Combine per-map ratings over more rounds: a season, a series or any grouping.
+
+    by=None       one entry per player over everything given (e.g. a season)
+    by='series'   one entry per player per series (see find_series)
+    by={match_id: group}  one entry per player per custom group (event, split, ...)
+
+    The rating is the player's Round Swing per round over all those rounds, and
+    rounds_added is the total in rounds. rating_low/rating_high show how far
+    that could move from round-to-round luck alone. With shrink=True the rating
+    is instead pulled toward average in proportion to how few rounds there are,
+    an estimate of the player's level rather than a record of what happened.
     """
     params = _resolve_config(config_path, {})['rating_params']
     sigma2 = params['shrinkage']['round_variance']
     tau2 = params['shrinkage']['true_variance']
-    z = _normal_quantile(0.5 + interval / 2)
+    z = NormalDist().inv_cdf(0.5 + interval / 2)
+    groups = find_series(ratings) if by == 'series' else by
 
-    totals: Dict[str, Dict[str, Any]] = {}
+    totals: Dict[tuple, Dict[str, Any]] = {}
     for result in ratings.values():
+        group = groups.get(result['match_id']) if isinstance(groups, dict) else None
         value = result['role_adjusted_rating'] if role_adjusted else result['rating']
-        t = totals.setdefault(result['puuid'], {'rounds': 0, 'weighted': 0.0, 'maps': 0, 'roles': {}})
+        t = totals.setdefault((result['puuid'], group), {'rounds': 0, 'weighted': 0.0, 'maps': 0, 'roles': {},
+                                                         'teams': set(), 'name': None})
         t['rounds'] += result['rounds_played']
         t['weighted'] += value * result['rounds_played']
         t['maps'] += 1
+        t['teams'].add(result['team'])
         if result.get('role'):
             t['roles'][result['role']] = t['roles'].get(result['role'], 0) + result['rounds_played']
         if 'player_info' in result:
             t['name'] = f"{result['player_info']['name']}#{result['player_info']['tagline']}"
 
     out = {}
-    for puuid, t in totals.items():
+    for (puuid, group), t in totals.items():
         n = t['rounds']
-        precision = n / sigma2 + 1.0 / tau2
-        shrunk = (t['weighted'] / sigma2) / precision
-        sd = math.sqrt(1.0 / precision)
-        out[puuid] = {
-            'name': t.get('name'),
+        mean = t['weighted'] / n if n else 0.0
+        entry = {
+            'puuid': puuid,
+            'name': t['name'],
             'maps': t['maps'],
             'rounds_played': n,
-            'raw_rating': t['weighted'] / n if n else 0.0,
-            'rating': shrunk,
-            'rating_low': shrunk - z * sd,
-            'rating_high': shrunk + z * sd,
+            'rating': mean,
+            'rounds_added': t['weighted'] / 100.0,
+            'rating_low': mean - z * math.sqrt(sigma2 / n) if n else 0.0,
+            'rating_high': mean + z * math.sqrt(sigma2 / n) if n else 0.0,
             'main_role': max(t['roles'], key=t['roles'].get) if t['roles'] else None,
         }
+        if shrink:
+            precision = n / sigma2 + 1.0 / tau2
+            entry['rating'] = (t['weighted'] / sigma2) / precision
+            entry['rating_low'] = entry['rating'] - z * math.sqrt(1.0 / precision)
+            entry['rating_high'] = entry['rating'] + z * math.sqrt(1.0 / precision)
+        if group is not None:
+            entry['group'] = group
+        out[puuid if groups is None else f"{puuid}_{group}"] = entry
     return out
-
-
-def _normal_quantile(p: float) -> float:
-    return NormalDist().inv_cdf(p)
 
 
 def _extract_damage_data(match: Dict) -> Dict[str, int]:

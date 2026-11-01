@@ -1,13 +1,17 @@
 # Round Swing Ledger
 #
-# Walks every round event in time order and books the change in round win
-# probability it caused:
-#   - kill:   the killing team's gain is split between the killer, teammates who
-#             damaged the victim, utility-only assisters and traded teammates
-#   - death:  the victim is charged the full loss for their team
-#   - plant:  the planter gets the attackers' gain from getting the spike down
-#   - defuse: the defuser gets the defenders' remaining gain
-# Every kill is zero-sum: what one team gains, the other loses.
+# Walks every round in time order and books every change in round win
+# probability to the players responsible, so a team's credits in a round add up
+# exactly to (round result - win probability at the start of the round):
+#   - kill:      the killing team's gain is split between the killer, teammates
+#                who damaged the victim, utility-only assisters and traded teammates
+#   - death:     the victim is charged the full loss for their team
+#   - objective: the planter / defuser gets their team's gain; the other side's
+#                alive players share the loss
+#   - hold:      win probability that moves while the clock runs (defenders
+#                holding, attackers sitting on a planted spike) and the final
+#                resolution of the round, shared by each side's alive players
+# Everything is zero-sum between the two teams.
 
 from typing import Dict, Any, Optional
 
@@ -22,9 +26,9 @@ DEFAULT_CREDIT = {
     'trade_window_ms': 3000,
 }
 
-SWING_KINDS = ('kill', 'assist', 'death', 'objective')
+SWING_KINDS = ('kill', 'assist', 'death', 'objective', 'hold')
 
-# Per-round counting stats kept alongside the swing (used by the rating weights).
+# Per-round counting stats kept alongside the swing.
 BOX_STATS = ('kills', 'deaths', 'assists', 'traded_deaths', 'damage_dealt', 'damage_taken',
              'first_kills', 'first_deaths', 'survived', 'kast', 'multi_kills', 'plants', 'defuses')
 
@@ -86,13 +90,20 @@ def _kill_shares(kill: Dict[str, Any], state: RoundState, parsed_round: Dict[str
     return {p: w / total for p, w in weights.items()}
 
 
+def _share(ledger: Dict[str, Dict[str, Any]], state: RoundState, side: str, amount: float, kind: str) -> None:
+    """Split an amount equally among a side's alive players (or the whole side if nobody is alive)."""
+    players = state.alive[side] or [p for p, s in state.side_of.items() if s == side]
+    for player in players:
+        ledger[player][kind] += amount / len(players)
+
+
 def compute_match_swing(match: Dict[str, Any], model: Optional[WinProbabilityModel] = None,
                         credit: Optional[Dict[str, Any]] = None,
                         parsed: Optional[Dict[str, Any]] = None) -> Dict[str, Dict[str, Any]]:
     """
     Return {puuid: ledger} where ledger holds the summed win-probability swing
-    (in rounds, i.e. 1.0 = one whole round) for kills, assists, deaths and
-    objectives, plus rounds played and the counting stats in BOX_STATS.
+    (in rounds, i.e. 1.0 = one whole round) for each kind in SWING_KINDS, plus
+    rounds played and the counting stats in BOX_STATS.
     """
     model = model or default_model()
     credit = {**DEFAULT_CREDIT, **(credit or {})}
@@ -114,6 +125,8 @@ def compute_match_swing(match: Dict[str, Any], model: Optional[WinProbabilityMod
         order = {'plant': 0, 'kill': 1, 'defuse': 2}
         events.sort(key=lambda e: (e[1], order[e[0]]))
 
+        # Attackers' win probability as booked so far; every change to it is credited to someone.
+        booked = model.attack_win_probability(state.features())
         recent_deaths = []
         round_kills: Dict[str, int] = {}
         round_assists: set = set()
@@ -124,23 +137,29 @@ def compute_match_swing(match: Dict[str, Any], model: Optional[WinProbabilityMod
                 if kind != 'defuse':
                     continue
             state.time = time
+            now = model.attack_win_probability(state.features())
+            _share(ledger, state, 'atk', now - booked, 'hold')
+            _share(ledger, state, 'def', booked - now, 'hold')
+            booked = now
 
             if kind == 'plant':
-                planter = event['player']
-                before = _team_wp(model, state, 'atk')
                 state.plant_time = time
-                gain = _team_wp(model, state, 'atk') - before
-                if planter in ledger:
-                    ledger[planter]['objective'] += gain
-                    ledger[planter]['plants'] += 1
+                after = model.attack_win_probability(state.features())
+                gain = after - booked
+                if event['player'] in ledger:
+                    ledger[event['player']]['objective'] += gain
+                    ledger[event['player']]['plants'] += 1
+                _share(ledger, state, 'def', -gain, 'objective')
+                booked = after
                 continue
 
             if kind == 'defuse':
-                defuser = event['player']
-                gain = 1.0 - _team_wp(model, state, 'def')
-                if defuser in ledger:
-                    ledger[defuser]['objective'] += gain
-                    ledger[defuser]['defuses'] += 1
+                gain = booked  # the attackers' remaining chance goes to zero
+                if event['player'] in ledger:
+                    ledger[event['player']]['objective'] += gain
+                    ledger[event['player']]['defuses'] += 1
+                _share(ledger, state, 'atk', -gain, 'objective')
+                booked = 0.0
                 continue
 
             victim, killer = event['victim'], event['killer']
@@ -151,28 +170,39 @@ def compute_match_swing(match: Dict[str, Any], model: Optional[WinProbabilityMod
             state.alive[victim_side].discard(victim)
             # Never negative: e.g. the last attacker dying once the spike can no longer be defused.
             loss = max(0.0, victim_before - _team_wp(model, state, victim_side))
+            booked += loss if victim_side == 'def' else -loss
+            killer_side = 'atk' if victim_side == 'def' else 'def'
 
             ledger[victim]['deaths'] += 1
             ledger[victim]['death'] -= loss
 
-            # Suicides, team kills and environmental deaths give nobody kill credit.
-            if killer in state.side_of and state.side_of[killer] != victim_side:
+            if killer in state.side_of and state.side_of[killer] == killer_side:
                 ledger[killer]['kills'] += 1
                 round_kills[killer] = round_kills.get(killer, 0) + 1
                 if first is None:
                     first = (killer, victim)
                 for player in event['assistants']:
-                    if state.side_of.get(player) == state.side_of[killer] and player != killer:
+                    if state.side_of.get(player) == killer_side and player != killer:
                         ledger[player]['assists'] += 1
                         round_assists.add(player)
                 for player, share in _kill_shares(event, state, parsed_round, recent_deaths, credit).items():
                     ledger[player]['kill' if player == killer else 'assist'] += loss * share
                 for death_time, dead, dead_killer in recent_deaths:
-                    if (dead_killer == victim and state.side_of.get(dead) == state.side_of[killer]
+                    if (dead_killer == victim and state.side_of.get(dead) == killer_side
                             and time - death_time <= credit['trade_window_ms']):
                         ledger[dead]['traded_deaths'] += 1
                         traded.add(dead)
+            else:
+                # Suicides, team kills and environmental deaths: the other side's alive players gain.
+                _share(ledger, state, killer_side, loss, 'hold')
             recent_deaths.append((time, victim, killer))
+
+        # Resolution: whatever is left between the booked chance and the result
+        # (time running out, a spike holding to detonation, a failed retake).
+        if parsed_round['attackers_won'] is not None:
+            residual = float(parsed_round['attackers_won']) - booked
+            _share(ledger, state, 'atk', residual, 'hold')
+            _share(ledger, state, 'def', -residual, 'hold')
 
         _box_stats(parsed_round, state, ledger, round_kills, round_assists, traded, first)
 

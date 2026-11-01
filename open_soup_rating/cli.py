@@ -20,6 +20,7 @@ Examples:
   osr calculate match_data.json
   osr calculate match_data.json --output ratings.json
   osr calculate matches/ --aggregate --pretty
+  osr calculate matches/ --series --pretty
   osr calculate match_data.json --components KillSwing DeathSwing
   osr list-components
         """
@@ -33,9 +34,13 @@ Examples:
     calc_parser.add_argument('-o', '--output', help='Output file path (default: stdout)')
     calc_parser.add_argument('-c', '--components', nargs='+', help='Components to report alongside the rating')
     calc_parser.add_argument('-a', '--aggregate', action='store_true',
-                             help='Combine all matches into one shrunk rating per player')
+                             help='Combine all matches into one rating per player (e.g. a season)')
+    calc_parser.add_argument('-s', '--series', action='store_true',
+                             help='Combine the maps of each series into one rating per player per series')
     calc_parser.add_argument('--role-adjusted', action='store_true',
-                             help='With --aggregate, rate players against their role baseline')
+                             help='With --aggregate/--series, rate players against their role baseline')
+    calc_parser.add_argument('--shrink', action='store_true',
+                             help='With --aggregate/--series, estimate player level (pull small samples to average)')
     calc_parser.add_argument('--config', help='Path to configuration directory')
     calc_parser.add_argument('--pretty', action='store_true', help='Pretty print JSON output')
     
@@ -79,8 +84,9 @@ def handle_calculate(args) -> int:
             components_to_use=args.components,
             config_path=args.config
         )
-        if args.aggregate:
-            result = osr.aggregate_ratings(result, config_path=args.config, role_adjusted=args.role_adjusted)
+        if args.aggregate or args.series:
+            result = osr.aggregate_ratings(result, by='series' if args.series else None, config_path=args.config,
+                                           role_adjusted=args.role_adjusted, shrink=args.shrink)
             result = dict(sorted(result.items(), key=lambda kv: kv[1]['rating'], reverse=True))
         
         # Format output

@@ -8,7 +8,7 @@ import open_soup_rating as osr
 
 def test_package_import():
     """Test that the package imports correctly."""
-    assert osr.__version__ == "2.0.0"
+    assert osr.__version__ == "2.1.0"
     assert osr.__author__ == "Zach Lewis"
     assert osr.__license__ == "AGPL-3.0"
 
@@ -19,7 +19,7 @@ def test_list_components():
     assert isinstance(components, list)
     assert len(components) > 0
     # Should contain core components
-    expected_components = {'KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing', 'APR', 'ADRa'}
+    expected_components = {'KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing', 'HoldSwing', 'APR', 'ADRa'}
     assert expected_components.issubset(set(components))
 
 

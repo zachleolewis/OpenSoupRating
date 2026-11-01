@@ -14,12 +14,12 @@ def get_default_config() -> Dict[str, Any]:
     return {
         'rating_params': load_rating_params(DATA_DIR / 'rating_params.json'),
         'credit': dict(DEFAULT_CREDIT),
-        'components': ['KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing', 'APR', 'ADRa'],
+        'components': ['KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing', 'HoldSwing', 'APR', 'ADRa'],
     }
 
 
 def load_rating_params(params_path: Path) -> Dict[str, Any]:
-    """Load centring, role baselines and shrinkage constants from JSON."""
+    """Load role baselines and variance constants from JSON."""
     if not params_path.exists():
         raise FileNotFoundError(f"Rating parameters file not found: {params_path}")
     try:
