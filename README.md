@@ -1,767 +1,353 @@
 # Open Soup Rating (OSR)
 
-A comprehensive, open-source rating system for Valorant player performance analysis. OSR provides accurate player ratings based on situational impact, economic factors, and statistical performance in competitive matches.
+An open-source rating system for Valorant player performance. OSR measures how
+much each player moved their team's chance of winning rounds. It credits the
+kills, assists, trades, deaths, plants and defuses that changed the round, and
+reports everything in one unit you can read directly.
+
+> **2.0 is a rewrite.** Version 1.1.1 had bugs that corrupted most ratings
+> (sides swapped in about half of all rounds, the spike always treated as
+> planted, broken economy lookups, and pip installs that couldn't find their
+> data). See [CHANGELOG.md](CHANGELOG.md) for what was wrong and how 2.0 was
+> validated.
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [The Rating Formula](#the-rating-formula)
-- [Normalization and Weights](#normalization-and-weights)
+- [How OSR Works](#how-osr-works)
+- [Reading the Numbers](#reading-the-numbers)
+- [Validation](#validation)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Understanding the Components](#understanding-the-components)
+- [Output](#output)
+- [Recalibrating on Your Own Data](#recalibrating-on-your-own-data)
 - [Project Structure](#project-structure)
 - [Library Usage](#library-usage)
 - [Data Requirements](#data-requirements)
-- [Configuration](#configuration)
-- [Advanced Features](#advanced-features)
-- [Contributing](#contributing)
+- [Limitations](#limitations)
 - [License](#license)
 
-## Overview
+## How OSR Works
 
-Open Soup Rating is designed to evaluate Valorant player performance beyond simple kill/death statistics. The system considers:
+### 1. Round win probability
 
-- **Situational Impact**: How kills and deaths affect round outcomes based on player counts (XvX situations)
-- **Economic Factors**: The relative value of eliminations based on equipment loadouts
-- **Performance Consistency**: Individual performance metrics like damage efficiency and assist rates
-- **Round Context**: Whether the spike is planted and team positioning
+At any moment of a round, OSR estimates P(attackers win the round) from:
 
-### Key Features
+- players alive on each side (every 5v5 … 1v1 cell has its own estimate)
+- whether the spike is planted
+- time left on the clock that matters: the round timer before the plant, the
+  spike timer after it
+- the loadout value still alive on each side
+- the map
 
-- **Modular Design**: Easy to customize and extend with new components
-- **Data-Driven**: Built using analysis of 44,080 player-match performances from North American Premier competitive play
-- **Comprehensive**: Accounts for situational context that traditional stats miss
-- **Open Source**: Fully transparent methodology and implementation
+It's a logistic model fitted on round states from 25,086 professional maps
+(`open_soup_rating/data/wp_model.json`). On the newest 20% of maps, held out
+from fitting, its log loss is 0.452. The 1.x lookup table scored 0.491 as
+shipped and 0.479 even when used correctly.
 
-## The Rating Formula
+### 2. Round Swing
 
-The Open Soup Rating combines four main components through a weighted formula:
+OSR walks through every round in time order and books the change in win
+probability caused by each event:
 
-```
-Final Rating = Σ(Component_i × Weight_i × Normalization_i) × Scaling_Factor
-```
+| Event | Who gets the swing |
+|---|---|
+| Kill | The killing team's gain is split: the killer gets 50 + their damage on the victim; teammates who damaged the victim get their damage; utility-only assisters (flashes, stuns, reveals) get 30; teammates the victim killed within the last 3 s (traded deaths) get 30. |
+| Death | The victim is charged the full loss for their team. |
+| Plant | The planter gets the attackers' gain from getting the spike down. |
+| Defuse | The defuser gets the defenders' remaining gain. |
 
-### Core Components
+Kills are zero-sum: what one team gains, the other loses. Kills after the round
+was decided (exit frags after a detonation, and so on) change nothing and count
+for nothing.
 
-1. **Kill Contribution (KillContrib)** - Weight: 43.14%
-   - Measures positive impact from eliminations
-   - Based on XvX win probability changes and economic modifiers
-   - Accounts for situational context (spike planted, player counts)
+Per player, this gives four components: **KillSwing, AssistSwing, DeathSwing
+and ObjectiveSwing**. Their sum is the player's **Round Swing**, a faithful
+record of what happened in that match.
 
-2. **Death Contribution (DeathContrib)** - Weight: 43.14%  
-   - Measures negative impact from deaths
-   - Uses same XvX methodology as kills but inverted
-   - Balanced with kill contribution for net impact assessment
+### 3. OSR
 
-3. **Average Performance Rating (APR)** - Weight: 5.20%
-   - Assists per round played
-   - Measures teamwork and supporting play
+Round Swing is accurate but noisy. A clutch kill and an opening kill take the
+same aim, yet one carries far more win probability. Sports analytics has the
+same split: baseball's win probability added describes a game, but rate stats
+predict a player better. OSR therefore combines:
 
-4. **Average Damage per Round Adjusted (ADRa)** - Weight: 8.51%
-   - Damage dealt above expected damage from kills
-   - Accounts for armor values when calculating expected damage
-   - Measures damage efficiency beyond securing eliminations
+- the four Round Swing components
+- kills and deaths per round
+- damage dealt and damage taken per round
 
-### XvX Impact Methodology
+Each input is weighted by how well it predicts the player's Round Swing in
+*other* matches (`rating_weights` in `open_soup_rating/data/rating_params.json`,
+fitted by `tools/calibrate.py`). Inputs that are mostly leverage luck get little
+weight; stable skill signals get more. The result stays in Round Swing units.
 
-The core innovation of OSR is using actual win probabilities for different player count scenarios:
+Because kills and damage move together, individual weights can shift a lot
+between calibrations while the rating barely changes. Read
+`rating_breakdown` as a whole rather than one weight at a time.
 
-- **5v5 (no spike)**: 49.5% attacker win rate
-- **5v4 (no spike)**: 71.0% attacker win rate  
-- **4v4 (spike planted)**: 62.1% attacker win rate
-- **3v2 (spike planted)**: 84.4% attacker win rate
+## Reading the Numbers
 
-When a player gets a kill, the system:
-1. Determines the before/after XvX situation
-2. Calculates the win probability change for their team
-3. Applies economic modifiers based on equipment values
-4. Weights the impact by the specific round context
+Every rating is in **percentage points of a round won per round played**, with
+**0 = the average player**.
 
-## Normalization and Weights
+- `rating` = **+2.0**: this performance is worth about 2% more round wins per
+  round than an average player would add. Over a 24-round map, that's roughly
+  half a round.
+- `round_swing`: the same unit, but literally what happened in this match.
+- `role_adjusted_rating`: `rating` relative to the average player on the same
+  role (duelist, initiator, controller, sentinel).
 
-### Statistical Foundation
+A single map is mostly noise: the spread of single-map ratings is several times
+the spread of true player levels. When rating players, aggregate across matches
+with `aggregate_ratings()` (or `osr calculate DIR --aggregate`). It shrinks each
+player toward average according to how many rounds they've played: about 200
+rounds count as much as the prior. It also returns a 90% interval.
 
-The Open Soup Rating system was calibrated using comprehensive data from North American Premier competitive matches spanning Episode 9 Act 1 through Episode V25 Act 4. This dataset includes:
+## Validation
 
-- **Total Matches**: 4,408 competitive matches
-- **Player Performances**: 44,080 individual player-match combinations  
-- **Competition Levels**: Contender (East/West) and Invite divisions
-- **Time Period**: Multiple competitive seasons ensuring diverse meta representation
+All of these numbers come from fitting on maps before 2026-04-06 and testing on
+the 5,018 maps after it.
 
-### Component Weights
+| | 1.1.1 | 2.0 OSR | 2.0 Round Swing | (K−D)/round |
+|---|---|---|---|---|
+| Split-half reliability (1,597 players with 40+ maps) | 0.676 | **0.733** | 0.593 | 0.750 |
+| Predicting held-out map winners from earlier ratings (AUC) | 0.610 | **0.619** | 0.594 | 0.626 |
+| Team average vs same-map round differential (r) | 0.909 | **0.940** | 0.922 | 0.949 |
 
-The component weights were derived through statistical analysis to optimize rating accuracy:
-
-```json
-{
-  "KillContrib": 0.4314443970577043,    // 43.14%
-  "DeathContrib": 0.4314443970577043,   // 43.14%  
-  "APR": 0.05202608006591386,           // 5.20%
-  "ADRa": 0.08508512581867748           // 8.51%
-}
-```
-
-**Weight Rationale:**
-- **Kill/Death Contribution (86.28% combined)**: These components capture the most impactful moments in rounds - eliminations that directly change win probabilities
-- **APR (5.20%)**: Supporting play through assists, while valuable, has less direct impact on round outcomes
-- **ADRa (8.51%)**: Damage efficiency beyond kills provides context for consistent performance but is secondary to actual eliminations
-
-### Normalization Parameters
-
-All components are normalized to achieve a standard distribution (mean = 0, standard deviation = 1) based on the competitive dataset:
-
-```json
-{
-  "KillContrib": {"mean": 2.916, "std": 3.614},
-  "DeathContrib": {"mean": -2.916, "std": 2.129},
-  "APR": {"mean": 0.282, "std": 0.517},
-  "ADRa": {"mean": 66.121, "std": 69.760}
-}
-```
-
-**Normalization Process:**
-1. Calculate each component's raw value
-2. Apply Z-score normalization: `(value - mean) / std`
-3. Apply component weights to normalized values
-4. Sum weighted components and apply final scaling
-
-### Final Rating Scaling
-
-The final rating undergoes additional scaling to produce interpretable values:
-
-```json
-{
-  "base_rating": 1.0,
-  "scaling_factor": 0.56,
-  "mean": 1.0354,
-  "std": 0.0898
-}
-```
-
-This ensures that:
-- **Average performance equals 0.0** (by Z-score normalization design)
-- **Standard deviation equals 1.0** for meaningful statistical interpretation
-- **Exceptional performances achieve positive ratings** (typically +1.5 to +6.4 range)
-- **Poor performances receive negative ratings** (typically -1.5 to -3.3 range)
-- **68% of players fall within ±1.0** (one standard deviation)
-- **95% of players fall within ±2.0** (two standard deviations)
+OSR 2.0 is better than 1.1.1 on every measure. The reliability gain is clear:
++0.057, 95% CI [+0.037, +0.078]. Plain (K−D)/round remains slightly more
+stable and slightly more predictive of future results (−0.018 reliability,
+−0.007 AUC). OSR's added value is attribution: it shows *where* a player's
+impact came from (opening kills vs. clean-up, assists, trades, objectives) in
+a unit you can read, not raw predictive power. Adjusting for opponent strength
+is the most promising next step.
 
 ## Installation
 
 ### Requirements
 - Python 3.9+
-- JSON match data from Riot Games API
+- JSON match data from the Riot Games API
 
 ### Quick Installation (Recommended)
 
-Install directly from PyPI:
 ```bash
 pip install open-soup-rating
 ```
 
 ### Development Setup
 
-For development or if you want to modify the source code:
-
-1. Clone the repository:
 ```bash
 git clone https://github.com/zachleolewis/OpenSoupRating.git
 cd OpenSoupRating
-```
-
-2. Install in development mode:
-```bash
-pip install -e .
-```
-
-3. Test the installation:
-```bash
-python main.py
+pip install -e .[dev]
+pytest
 ```
 
 ## Quick Start
 
 ### Command Line Interface
 
-#### Using the OSR command (after pip install):
 ```bash
-# Calculate ratings from match data
-osr calculate match_data.json --output ratings.json
+# Rate every player in one match
+osr calculate match.json --pretty
 
-# List available rating components
+# Rate a folder of matches (.json or .json.gz) and save per-match results
+osr calculate matches/ --output ratings.json
+
+# One shrunk rating per player across all matches, best first
+osr calculate matches/ --aggregate --pretty
+
+# Same, relative to each player's role
+osr calculate matches/ --aggregate --role-adjusted
+
+# List components / version
 osr list-components
-
-# Get version information
 osr version
-
-# See all options
-osr --help
 ```
 
-#### Using the interactive calculator (development):
-```bash
-python main.py
-```
-
-Options include:
-- Calculate ratings from match directories
-- Extract individual components  
-- List available components
-- Save results to JSON files
-
-### Python Library Usage
+### Python
 
 ```python
 import open_soup_rating as osr
 
-# Calculate ratings for a single match
-ratings = osr.calculate_rating("path/to/match.json")
+# Per-match ratings with names and box scores
+ratings = osr.calculate_rating_with_player_info("matches/")
 
-# Calculate ratings with player information
-detailed_ratings = osr.calculate_rating_with_player_info("path/to/match_directory/")
-
-# Get individual component values
-components = osr.get_components("path/to/match.json", ["KillContrib", "DeathContrib"])
-
-print(f"Available components: {osr.list_components()}")
+# One rating per player across all matches
+players = osr.aggregate_ratings(ratings)
+for puuid, p in sorted(players.items(), key=lambda kv: -kv[1]['rating'])[:10]:
+    print(f"{p['name']:24s} {p['rating']:+.2f}  [{p['rating_low']:+.2f}, {p['rating_high']:+.2f}]  {p['maps']} maps")
 ```
 
-### Example Output
+## Output
+
+`calculate_rating` returns one entry per player per match, keyed
+`"{puuid}_{matchId}"`:
 
 ```python
 {
-  "player_puuid_match_id": {
-    "rating": 0.845,
-    "player_info": {
-      "name": "PlayerName",
-      "tagline": "TAG",
-      "kills": 18,
-      "deaths": 12,
-      "assists": 7,
-      "rounds_played": 24
-    },
-    "components": {
-      "KillContrib": 3.24,
-      "DeathContrib": -2.18,
-      "APR": 0.29,
-      "ADRa": 74.5
-    },
-    "normalized_components": {
-      "KillContrib_norm": 0.492,
-      "DeathContrib_norm": 0.492,
-      "APR_norm": 0.015,
-      "ADRa_norm": 0.120
-    }
-  }
+  "rating": 1.84,                  # OSR, percentage points of a round won per round (0 = average)
+  "role_adjusted_rating": 1.91,    # relative to the player's role
+  "round_swing": 3.10,             # what actually happened, same unit
+  "swing_per_round": {             # the four Round Swing components
+    "KillSwing": 12.4, "AssistSwing": 1.6, "DeathSwing": -10.2, "ObjectiveSwing": 0.2
+  },
+  "rating_breakdown": {...},       # each input's contribution; sums exactly to "rating"
+  "components": {...},             # every registered component, incl. APR and ADRa
+  "rounds_played": 22, "kills": 19, "deaths": 14, "assists": 5,
+  "traded_deaths": 4, "first_kills": 4, "first_deaths": 2, "kast": 0.77, "adr": 151.2,
+  "agent": "Jett", "role": "Duelist",
+  "puuid": "...", "match_id": "..."
 }
 ```
 
-## Understanding the Components
+`calculate_rating_with_player_info` adds a `player_info` block (name, tag and
+Riot box score).
 
-The Open Soup Rating system evaluates player performance through four distinct components, each capturing different aspects of competitive play. These components work together to provide a comprehensive assessment that goes far beyond traditional kill/death ratios.
+`aggregate_ratings` returns one entry per player:
 
-### Kill Contribution (KillContrib)
-
-**Purpose**: Measures the positive impact of eliminations based on situational context and economic factors.
-
-**Methodology**: 
-The system evaluates each kill by analyzing how it changes the round's win probability for the player's team. This goes beyond simply counting kills to assess their actual value in winning rounds.
-
-**Calculation Process**:
-
-1. **Pre-Kill Analysis**:
-   - Determine alive player counts for both teams (e.g., 4v3, 5v2)
-   - Check if spike is planted
-   - Record round timing and context
-
-2. **XvX Impact Calculation**:
-   - Look up win probability for the pre-kill situation
-   - Look up win probability for the post-kill situation
-   - Calculate the probability change for the killer's team
-   
-   Example: A kill that changes 3v3 (49% win rate) to 3v2 (74.6% win rate) provides +25.6% win probability
-
-3. **Economic Modifiers**:
-   - Calculate the loadout value difference between killer and victim
-   - Apply economic multipliers based on relative equipment investment
-   - Higher-value eliminations (killing an expensive loadout with a cheap one) receive bonuses
-
-4. **Final Component Value**:
-   ```
-   KillContrib = base_impact × economic_modifier
-   ```
-
-**Key Insights**:
-- Eliminating an enemy with superior equipment provides additional value
-- Spike planted status significantly affects the impact calculation
-
-**Example Values**:
-- Typical range: 0.0-9.1 points
-- Median performance: ~2.8 points
-- 75th percentile: ~3.7 points
-
-### Death Contribution (DeathContrib)
-
-**Purpose**: Measures the negative impact when a player dies, using the same sophisticated methodology as kill contribution.
-
-**Methodology**:
-Death Contribution is essentially the inverse of Kill Contribution, calculating how much a player's death hurts their team's chances of winning the round.
-
-**Calculation Process**:
-
-1. **Pre-Death Analysis**:
-   - Record the XvX situation before the player dies
-   - Note spike planted status and round timing
-   - Assess the player's equipment loadout
-
-2. **XvX Impact Calculation**:
-   - Calculate win probability before death (e.g., 4v4 = 50.5%)
-   - Calculate win probability after death (e.g., 3v4 = 27.0%)  
-   - Determine probability loss for the player's team (-23.5%)
-
-3. **Economic Impact**:
-   - Factor in the value of equipment lost upon death
-   - Consider the relative investment compared to the killer
-   - Losing expensive equipment while the enemy has cheap gear increases the negative impact
-
-4. **Final Component Value**:
-   ```
-   DeathContrib = -(base_impact × economic_modifier)
-   ```
-
-**Key Characteristics**:
-**Key Characteristics**:
-- Always produces negative values (deaths always hurt your team)
-- Deaths with expensive equipment carry additional negative weight
-- Balanced with KillContrib to show net round impact
-
-**Example Values**:
-- Typical range: -5.6 to 0.0 points
-- Median performance: ~-2.3 points
-- 25th percentile: ~-2.8 points
-
-### Average Performance Rating (APR)
-
-**Purpose**: Captures supporting play and teamwork through assist contributions.
-
-**Simple but Meaningful**:
-While APR appears straightforward, it provides crucial context about a player's role and impact beyond direct eliminations.
-
-**Calculation**:
 ```python
-APR = total_assists / rounds_played
+{
+  "name": "Player#TAG", "maps": 14, "rounds_played": 312, "main_role": "Initiator",
+  "raw_rating": 2.71,              # rounds-weighted average of per-match ratings
+  "rating": 1.65,                  # shrunk toward average by sample size
+  "rating_low": 0.53, "rating_high": 2.77   # 90% interval
+}
 ```
 
-**Why Assists Matter**:
-- **Team Play Indicator**: High assist rates suggest good positioning and team coordination
-- **Support Role Recognition**: Players who enable teammates get appropriate credit
-- **Consistency Metric**: Shows reliable contribution across all rounds
+### Components
 
-**Important Notes**:
-- Assists include both damage contributions and ability assists within the elimination time window
-- Normalized across all competitive data to ensure fair weighting
-- Lower weight (5.20%) reflects supportive rather than primary impact
+| Component | Meaning | In the rating? |
+|---|---|---|
+| `KillSwing` | Killer's share of the win probability gained by their kills | yes |
+| `AssistSwing` | Share of teammates' kills earned through damage, utility assists and being traded | yes |
+| `DeathSwing` | Win probability the team lost when the player died (negative) | yes |
+| `ObjectiveSwing` | Win probability gained by planting or defusing | yes |
+| `APR` | Assists per round | reported only |
+| `ADRa` | Damage beyond what the player's own kills needed, per round | reported only |
 
-**Example Values**:
-- Typical range: 0.0-1.4 assists per round
-- Median performance: ~0.2 assists per round
-- 75th percentile: ~0.4 assists per round
+## Recalibrating on Your Own Data
 
-### Average Damage per Round Adjusted (ADRa)
+The shipped calibration comes from professional matches (VCT, Challengers,
+Game Changers; patches 8.00–13.08). To rate a different population, such as
+Premier or ranked, refit on matches from that population:
 
-**Purpose**: Measures damage efficiency beyond what's expected from kills, indicating consistent performance and finishing ability.
+```bash
+pip install -e .[calibrate]
+python tools/calibrate.py path/to/matches --holdout 0.2 --workers 8
+```
 
-**The Problem with Raw ADR**:
-Traditional Average Damage per Round doesn't account for the fact that players with more kills naturally deal more damage. ADRa solves this by calculating damage efficiency relative to eliminations achieved.
+This rewrites `open_soup_rating/data/wp_model.json` and `rating_params.json`.
+Options:
+- `--min-patch` sets the oldest patch to use (default 8.0).
+- `--before YYYY-MM-DD` fits only on older maps, for backtests.
+- `--out DIR` writes somewhere else.
 
-**Calculation Process**:
+You can then pass that directory as `config_path` to use it without
+overwriting the defaults:
 
-1. **Expected Damage Calculation**:
-   For each kill a player achieves, calculate expected damage based on victim's armor:
-   ```python
-   expected_damage_per_kill = {
-       'No Armor': 100,
-       'Light Armor': 125,  # 100 + 25
-       'Heavy Armor': 150,  # 100 + 50
-       'Regen Armor': 125   # 100 + 25
-   }
-   ```
-
-2. **Total Expected Damage**:
-   ```python
-   total_expected = sum(expected_damage for each kill)
-   ```
-
-3. **ADRa Calculation**:
-   ```python
-   ADRa = max(0, (total_damage_dealt - total_expected) / rounds_played)
-   ```
-
-4. **Floor at Zero**: Negative values are set to 0 to ensure ADRa only measures positive damage efficiency
-
-**What ADRa Reveals**:
-
-- **High ADRa**: Player consistently damages multiple enemies, weakens targets for teammates, or finishes wounded opponents efficiently
-- **Low ADRa**: Player tends to secure kills with minimal excess damage, potentially indicating good target selection or cleanup kills
-- **Consistent High ADRa**: Indicates strong aim, positioning, and ability to apply pressure beyond just securing eliminations
-
-**Example Values**:
-- Typical range: 0.0-272.6 points
-- Median performance: ~63.5 points
-- 75th percentile: ~79.1 points
-
-### Component Synergy
-
-**Balanced Assessment**: The four components work together to provide a complete picture:
-
-- **Kill/Death Contribution**: Measures round impact through eliminations
-- **APR**: Recognizes teamwork and supporting play  
-- **ADRa**: Assesses consistent damage pressure and efficiency
-
-This multi-faceted approach ensures that different playstyles and roles are fairly evaluated within the competitive context.
+```python
+osr.calculate_rating("matches/", config_path="my_calibration/")
+```
 
 ## Project Structure
 
-The Open Soup Rating system is organized into a clean, modular architecture that separates concerns and makes the codebase easy to understand and extend.
-
 ```
 OpenSoupRating/
-├── main.py                          # Command-line interface and entry point
-├── README.md                        # This documentation
-├── 
-├── open_soup_rating/                # Main package directory
-│   ├── __init__.py                  # Package initialization and public API
-│   │
-│   ├── core/                        # Core calculation engine
-│   │   ├── __init__.py
-│   │   ├── rating_calculator.py     # Main rating calculation logic
-│   │   └── component_registry.py    # Component management system
-│   │
-│   ├── components/                  # Individual rating components
-│   │   ├── __init__.py
-│   │   ├── kill_contrib.py          # Kill contribution calculator
-│   │   ├── death_contrib.py         # Death contribution calculator
-│   │   ├── apr.py                   # Average Performance Rating
-│   │   └── adra.py                  # Average Damage per Round Adjusted
-│   │
-│   ├── data/                        # Data loading and management
-│   │   ├── __init__.py
-│   │   └── loader.py                # Data loading utilities
-│   │
-│   └── utils/                       # Utility functions
-│       ├── __init__.py
-│       ├── config.py                # Configuration management
-│       └── validation.py            # Data validation functions
-│
-├── data/                            # Configuration and reference data
-│   ├── weights.json                 # Component weights
-│   ├── normalization_params.json    # Statistical parameters
-│   ├── xvx_data.json               # XvX win probabilities
-│   └── loadout_cost_analysis.json  # Economic data
-│
-└── docs/                           # Additional documentation
-    ├── LICENSE.md                  # Full license text
-    └── TRADEMARK.md               # Trademark policy
-
+├── main.py                          # Interactive entry point
+├── CHANGELOG.md                     # Release notes
+├── tools/
+│   └── calibrate.py                 # Fits the win probability model and rating constants
+├── open_soup_rating/
+│   ├── core/
+│   │   ├── rounds.py                # Match parsing: sides, events, round end
+│   │   ├── win_probability.py       # Round win probability model
+│   │   ├── swing.py                 # Round Swing ledger and kill-credit split
+│   │   ├── rating_model.py          # Rating inputs and weights
+│   │   ├── rating_calculator.py     # calculate_rating, aggregate_ratings, get_components
+│   │   ├── game_content.py          # Agent roles and armor values
+│   │   └── component_registry.py    # Component registration
+│   ├── components/                  # KillSwing, AssistSwing, DeathSwing, ObjectiveSwing, APR, ADRa
+│   ├── data/
+│   │   ├── wp_model.json            # Win probability coefficients
+│   │   ├── rating_params.json       # Rating weights, centring, role baselines, shrinkage
+│   │   ├── game_content.json        # Agent → role, armor UUID → shield value
+│   │   └── loader.py                # Match loading (.json / .json.gz)
+│   └── utils/                       # Configuration and validation
+└── tests/
 ```
-
-### Key Directories Explained
-
-#### `open_soup_rating/` - Main Package
-The core library that can be imported and used in other projects. Contains all the calculation logic and utilities needed to compute ratings.
-
-#### `open_soup_rating/core/` - Calculation Engine
-- **`rating_calculator.py`**: Contains the main functions (`calculate_rating`, `get_components`) that orchestrate the rating calculation process
-- **`component_registry.py`**: Manages the available rating components, handles dynamic loading and registration
-
-#### `open_soup_rating/components/` - Rating Components
-Each file contains the calculation logic for one rating component:
-- **`kill_contrib.py`**: XvX-based kill impact calculation with economic modifiers
-- **`death_contrib.py`**: XvX-based death impact calculation (inverse of kills)
-- **`apr.py`**: Simple assists-per-round calculation  
-- **`adra.py`**: Damage efficiency calculation with expected damage adjustment
-
-#### `open_soup_rating/data/` - Data Management
-- **`loader.py`**: Functions to load match data from files, directories, or data structures
-
-#### `open_soup_rating/utils/` - Utilities
-- **`config.py`**: Configuration loading and default values
-- **`validation.py`**: Match data format validation
-
-#### `data/` - Configuration Files
-Contains the calibrated parameters derived from competitive match analysis:
-- **`weights.json`**: The optimized weights for each component
-- **`normalization_params.json`**: Statistical parameters for standardization
-- **`xvx_data.json`**: Win probability data for all player count scenarios
-- **`loadout_cost_analysis.json`**: Economic impact data for equipment valuations
-
-### Architecture Benefits
-
-**Modularity**: Each component is self-contained and can be easily modified or replaced
-**Extensibility**: New components can be added without changing existing code
-**Testability**: Individual components can be tested in isolation
-**Maintainability**: Clear separation of concerns makes the codebase easy to understand
-**Reusability**: Core library can be imported and used in other projects
-
-### Adding Custom Components
-
-The modular architecture makes it easy to add new rating components:
-
-1. Create a new file in `open_soup_rating/components/`
-2. Implement a function following the standard signature
-3. The component will be automatically discovered and registered
-4. Use in calculations by including it in the `components_to_use` parameter
-
-This structure ensures that the Open Soup Rating system remains flexible and extensible while maintaining clean, understandable code.
-
-Shows consistent damage output and finishing ability.
 
 ## Library Usage
 
 ### Core Functions
 
-#### `calculate_rating(match_data, **kwargs)`
-Calculates OSR ratings from match data.
+- `calculate_rating(match_data, components_to_use=None, config_path=None, wp_model=None)` returns per-match ratings.
+- `calculate_rating_with_player_info(...)` does the same, plus name, tag and box score.
+- `aggregate_ratings(ratings, role_adjusted=False, interval=0.9)` returns one shrunk rating per player.
+- `get_components(match_data, component_names=None)` returns raw component values only.
+- `compute_match_swing(match)` returns the raw Round Swing ledger for one match.
+- `WinProbabilityModel.load(path=None)` loads the win probability model, for your own analysis.
 
-**Parameters:**
-- `match_data`: File path, directory path, or loaded match data
-- `weights`: Custom component weights (optional)
-- `normalization_params`: Custom normalization parameters (optional)
-- `components_to_use`: List of components to include (optional)
-
-#### `calculate_rating_with_player_info(match_data, **kwargs)`
-Same as above but includes detailed player information in output.
-
-#### `get_components(match_data, component_names=None, **kwargs)`
-Extract individual component values without final rating calculation.
+`match_data` can be a file, a directory, a match dict or a list of match dicts.
 
 ### Custom Components
 
-Add your own rating components:
+Custom components are calculated and reported alongside the rating. They do
+not change the rating itself.
 
 ```python
 def calculate_headshot_rate(player, match, damage_data, economic_data, xvx_data, **kwargs):
-    """Calculate headshot percentage component."""
-    stats = player.get('stats', {})
-    total_kills = stats.get('kills', 0)
-    headshots = stats.get('headshotKills', 0)
-    
-    if total_kills == 0:
-        return 0.0
-    
-    return headshots / total_kills
+    """Headshots as a share of all hits."""
+    heads = hits = 0
+    for rnd in match["roundResults"]:
+        for ps in rnd["playerStats"]:
+            if ps["puuid"] == player["puuid"]:
+                for d in ps.get("damage", []):
+                    heads += d.get("headshots", 0)
+                    hits += d.get("headshots", 0) + d.get("bodyshots", 0) + d.get("legshots", 0)
+    return heads / hits if hits else 0.0
 
-# Register the component
-osr.add_component('HeadshotRate', calculate_headshot_rate)
-
-# Use in calculations  
-ratings = osr.calculate_rating("match.json", components_to_use=['KillContrib', 'HeadshotRate'])
+osr.add_component("HeadshotRate", calculate_headshot_rate)
+ratings = osr.calculate_rating("match.json")   # components now include HeadshotRate
 ```
+
+Components also receive `swing` (the match's Round Swing ledger) and `parsed`
+(the parsed rounds) as keyword arguments.
 
 ## Data Requirements
 
-### Match Data Format
+OSR reads Riot Games API match JSON. It uses:
 
-OSR requires JSON match data from the Riot Games API v2. Key required fields:
+- `matchInfo.matchId` and `matchInfo.mapId`
+- `players[]`: `puuid`, `teamId`, `characterId`, `stats`; observers are ignored
+- `roundResults[]`:
+  - `roundNum`, `winningTeam`, `roundResultCode`
+  - `bombPlanter`, `plantRoundTime`, `bombDefuser`, `defuseRoundTime`
+  - `playerStats[].kills[]`: `timeSinceRoundStartMillis`, `killer`, `victim`, `assistants`, `finishingDamage`
+  - `playerStats[].damage[]`: `receiver`, `damage`
+  - `playerStats[].economy`: `loadoutValue`, `armor`
 
-```json
-{
-  "matchInfo": {
-    "matchId": "uuid",
-    "mapId": "/Game/Maps/...",
-    "gameVersion": "..."
-  },
-  "players": [
-    {
-      "puuid": "player_uuid", 
-      "gameName": "PlayerName",
-      "tagLine": "TAG",
-      "teamId": "Blue",
-      "stats": {
-        "kills": 18,
-        "deaths": 12, 
-        "assists": 7,
-        "roundsPlayed": 24
-      }
-    }
-  ],
-  "roundResults": [
-    {
-      "roundNum": 1,
-      "playerStats": [
-        {
-          "puuid": "player_uuid",
-          "kills": [{"victim": "victim_puuid", "timeSinceRoundStartMillis": 15000}],
-          "damage": [{"receiver": "victim_puuid", "damage": 150}],
-          "economy": {"loadoutValue": 4500, "armor": "Heavy"}
-        }
-      ]
-    }
-  ]
-}
-```
+## Limitations
 
-### Data Sources
-
-The system works with:
-- **Riot Games API**: Official tournament match data
-- **Community APIs**: Third-party match data providers
-- **Local Files**: Saved match data in JSON format
-
-## Configuration
-
-### Default Configuration
-
-The system uses optimized weights and normalization parameters derived from tournament data:
-
-```json
-{
-  "weights": {
-    "KillContrib": 0.4314,
-    "DeathContrib": 0.4314, 
-    "APR": 0.0520,
-    "ADRa": 0.0851
-  },
-  "normalization_params": {
-    "KillContrib": {"mean": 2.889, "std": 3.614},
-    "DeathContrib": {"mean": -2.360, "std": 2.129},
-    "APR": {"mean": 0.282, "std": 0.517},
-    "ADRa": {"mean": 66.121, "std": 69.760}
-  }
-}
-```
-
-### Custom Configuration
-
-Override defaults by providing custom parameters:
-
-```python
-custom_weights = {
-    'KillContrib': 0.40,
-    'DeathContrib': 0.40,
-    'APR': 0.10, 
-    'ADRa': 0.10
-}
-
-ratings = osr.calculate_rating("match.json", weights=custom_weights)
-```
-
-## Advanced Features
-
-### Batch Processing
-
-Process multiple matches efficiently:
-
-```python
-# Directory of match files
-ratings = osr.calculate_rating("tournament_matches/")
-
-# List of match data
-matches = [match1_data, match2_data, match3_data]
-ratings = osr.calculate_rating(matches)
-```
-
-### Component Analysis
-
-Analyze individual performance aspects:
-
-```python
-# Get only kill/death impact
-kd_components = osr.get_components("match.json", ["KillContrib", "DeathContrib"])
-
-# Analyze damage efficiency
-damage_components = osr.get_components("match_dir/", "ADRa")
-
-# Get all components
-all_components = osr.get_components("match.json")
-```
-
-### Tournament Analysis
-
-Example workflow for tournament evaluation:
-
-```python
-import open_soup_rating as osr
-
-# Calculate all player ratings
-tournament_ratings = osr.calculate_rating_with_player_info("tournament_data/")
-
-# Find top performers
-top_players = sorted(tournament_ratings.items(), 
-                    key=lambda x: x[1]['rating'], reverse=True)
-
-print("Top 10 Players:")
-for i, (player_key, data) in enumerate(top_players[:10]):
-    player_info = data['player_info']
-    print(f"{i+1}. {player_info['name']}#{player_info['tagline']}: {data['rating']:.3f}")
-
-# Save results
-with open("tournament_results.json", "w") as f:
-    json.dump(tournament_ratings, f, indent=2)
-```
+- **No opponent adjustment.** A player who farms weaker teams looks better than
+  they are. Compare players who faced similar opposition.
+- **Position isn't used.** Kill and plant locations are in the data, but the
+  win probability model doesn't use them yet.
+- **Ultimates and utility aren't observed** beyond utility assists.
+- **Calibration population matters.** The default constants come from pro play.
+  Recalibrate for other levels.
 
 ## Contributing
 
-We welcome contributions to improve the Open Soup Rating system!
-
-### Development Setup
-
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes with tests
-4. Ensure all tests pass
-5. Submit a pull request
-
-### Code Style
-
-- Follow PEP 8 guidelines
-- Use type hints where possible
-- Write docstrings for all functions
-- Include unit tests for new features
-
-### Adding Components
-
-To add a new rating component:
-
-1. Create a function following the component interface
-2. Place it in `open_soup_rating/components/`
-3. Add tests in the `tests/` directory
-4. Update documentation
-
-Component function signature:
-```python
-def calculate_component_name(
-    player: Dict[str, Any],
-    match: Dict[str, Any], 
-    damage_data: Dict[str, int],
-    economic_data: Dict[str, Any],
-    xvx_data: Dict[str, Any],
-    **kwargs
-) -> float:
-    """Component calculation logic here"""
-    return component_value
-```
+3. Make your changes with tests (`pytest`)
+4. Submit a pull request
 
 ## License
 
-This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). 
-
-The AGPL-3.0 license ensures that:
-- The source code remains open and free
-- Any modifications or improvements must be shared back to the community  
-- Network use of the software requires providing source code to users
-- Commercial use is allowed with proper attribution and source code sharing
-
-See [LICENSE.md](docs/LICENSE.md) for the full license text.
-
-## Acknowledgments
-
-- Built using match data from North American Premier Contender and Invite divisions
-- Tournament data spanning Episode 9 Act 1 through Episode V25 Act 4
-- XvX probability data derived from 44,080 competitive match performances
-- Normalization parameters trained on comprehensive competitive tournament statistics
+This project is licensed under the GNU Affero General Public License v3.0
+(AGPL-3.0). See [LICENSE.md](docs/LICENSE.md) for the full text.
 
 ---
 
-**Open Soup Rating** - Transparent, data-driven Valorant performance analysis.
+**Open Soup Rating**: transparent, data-driven Valorant performance analysis.

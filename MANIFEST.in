@@ -3,8 +3,7 @@ include README.md
 include LICENSE
 include pyproject.toml
 
-# Include data files
-recursive-include data *.json
+# Include data files (model coefficients, rating constants, agent/armor reference)
 recursive-include open_soup_rating/data *.json
 
 # Include sample data for testing/examples
@@ -12,7 +11,6 @@ recursive-include sample_data *.json
 
 # Exclude unwanted files and directories
 exclude main.py
-exclude ratings_output.json
 recursive-exclude archive *
 recursive-exclude vlr_osr_comparison *
 recursive-exclude __pycache__ *

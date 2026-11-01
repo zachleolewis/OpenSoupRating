@@ -11,14 +11,14 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 def main():
     # Main entry point for the OSR system.
-    print("Open Soup Rating (OSR) System v1.1.0")
-    print("=" * 40)
-    print("Calculate Valorant player ratings from match data")
-    print()
-
     try:
         # Import the library
         import open_soup_rating as osr
+
+        print(f"Open Soup Rating (OSR) System v{osr.__version__}")
+        print("=" * 40)
+        print("Calculate Valorant player ratings from match data")
+        print()
 
         print("Library loaded successfully!")
         print(f"Available components: {osr.list_components()}")

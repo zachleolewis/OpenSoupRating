@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OpenSoupRating"
-version = "1.1.1"
+version = "2.0.0"
 authors = [
     {name = "Zach Lewis", email = "your.email@example.com"}
 ]
@@ -39,16 +39,17 @@ dev = [
     "mypy",
     "pre-commit",
 ]
-full = [
-    # Additional dependencies for full functionality
-    # Add any specific packages your code needs here
+calibrate = [
+    # Only needed to refit the model with tools/calibrate.py
+    "numpy",
+    "scikit-learn",
 ]
 
 [project.urls]
-Homepage = "https://github.com/zachlewis/OpenSoupRating"
-Repository = "https://github.com/zachlewis/OpenSoupRating"
-Issues = "https://github.com/zachlewis/OpenSoupRating/issues"
-Documentation = "https://github.com/zachlewis/OpenSoupRating#readme"
+Homepage = "https://github.com/zachleolewis/OpenSoupRating"
+Repository = "https://github.com/zachleolewis/OpenSoupRating"
+Issues = "https://github.com/zachleolewis/OpenSoupRating/issues"
+Documentation = "https://github.com/zachleolewis/OpenSoupRating#readme"
 
 [project.scripts]
 osr = "open_soup_rating.cli:main"

@@ -1,428 +1,286 @@
 # Main Rating Calculator - Core OSR calculation logic
+#
+# Every result carries two numbers in the same unit (percentage points of a
+# round won per round, 0 = average player):
+#   round_swing  what happened: the win probability the player actually added
+#   rating (OSR) the player's level: Round Swing combined with kills, deaths
+#                and damage, weighted by how well each predicts Round Swing
+#                in other matches (see core/rating_model.py)
 
-import json
-from typing import Dict, List, Any, Optional, Union
+import math
+import warnings
 from pathlib import Path
+from statistics import NormalDist
+from typing import Dict, List, Any, Optional, Union
 
 from .component_registry import get_component, list_components
-from ..data.loader import load_config_data
-from ..utils.config import get_default_config
+from .game_content import agent_name, agent_role
+from .rounds import parse_match
+from .rating_model import rating_features, rating_terms, round_swing
+from .swing import compute_match_swing
+from .win_probability import WinProbabilityModel, default_model
+from ..data.loader import load_config_data, load_match_data
+from ..utils.config import get_default_config, load_rating_params
 from ..utils.validation import validate_match_data
 
-def calculate_rating(
-    match_data: Union[str, Path, Dict, List[Dict]],
-    weights: Optional[Dict[str, float]] = None,
-    normalization_params: Optional[Dict[str, Dict[str, float]]] = None,
-    components_to_use: Optional[List[str]] = None,
-    config_path: Optional[Union[str, Path]] = None,
-    **kwargs
-) -> Dict[str, Any]:
-    # Calculate Open Soup Rating for players in match data.
-    # Args:
-    #     match_data: Path to match data file/directory, or loaded match data
-    #     weights: Custom weights for components (optional)
-    #     normalization_params: Custom normalization parameters (optional)
-    #     components_to_use: List of components to include (optional)
-    #     config_path: Path to custom config directory (optional)
-    #     **kwargs: Additional parameters for component calculations
-    # Returns:
-    #     Dict containing ratings and component data for each player-match
+SWING_COMPONENTS = {
+    'KillSwing': 'kill',
+    'AssistSwing': 'assist',
+    'DeathSwing': 'death',
+    'ObjectiveSwing': 'objective',
+}
 
-    # Load configuration
+
+def _load_matches(match_data: Union[str, Path, Dict, List[Dict]]) -> List[Dict[str, Any]]:
+    if isinstance(match_data, (str, Path)):
+        return load_match_data(match_data)
+    if isinstance(match_data, dict):
+        return [match_data]
+    if isinstance(match_data, list):
+        return match_data
+    raise ValueError("match_data must be a file path, directory path, dict, or list of dicts")
+
+
+def _resolve_config(config_path: Optional[Union[str, Path]], kwargs: Dict[str, Any]) -> Dict[str, Any]:
     config = get_default_config()
     if config_path:
-        config.update(load_config_data(config_path))
+        path = Path(config_path)
+        if path.is_dir() and (path / 'rating_params.json').exists():
+            # A calibration output directory (tools/calibrate.py --out)
+            config['rating_params'] = load_rating_params(path / 'rating_params.json')
+            if (path / 'wp_model.json').exists():
+                config['wp_model_path'] = path / 'wp_model.json'
+        else:
+            config.update(load_config_data(path))
+    for legacy in ('weights', 'normalization_params'):
+        if kwargs.pop(legacy, None) is not None:
+            warnings.warn(f"'{legacy}' is no longer used: OSR 2 weights are fitted by tools/calibrate.py "
+                          "and need no normalization.", DeprecationWarning, stacklevel=3)
+    return config
 
-    # Load match data
-    if isinstance(match_data, (str, Path)):
-        from ..data.loader import load_match_data
-        matches = load_match_data(match_data)
-    elif isinstance(match_data, dict):
-        matches = [match_data]
-    elif isinstance(match_data, list):
-        matches = match_data
-    else:
-        raise ValueError("match_data must be a file path, directory path, dict, or list of dicts")
 
-    # Validate match data
-    for match in matches:
-        validate_match_data(match)
+def _resolve_model(config: Dict[str, Any], wp_model: Optional[WinProbabilityModel]) -> WinProbabilityModel:
+    if wp_model is not None:
+        return wp_model
+    if config.get('wp_model_path'):
+        return WinProbabilityModel.load(config['wp_model_path'])
+    return default_model()
 
-    # Load weights and normalization params
-    if weights is None:
-        weights = config.get('weights', {})
-    if normalization_params is None:
-        normalization_params = config.get('normalization_params', {})
 
-    # Determine components to use
-    if components_to_use is None:
-        components_to_use = list_components()
+def _match_components(match: Dict[str, Any], component_names: List[str], wp_model: WinProbabilityModel,
+                      credit: Dict[str, Any], **kwargs) -> Dict[str, Dict[str, Any]]:
+    """Compute the swing ledger once, then every requested component for each player."""
+    validate_match_data(match)
+    parsed = parse_match(match)
+    ledger = compute_match_swing(match, wp_model, credit, parsed=parsed)
+    damage_data = _extract_damage_data(match)
+    match_id = match['matchInfo']['matchId']
 
-    # Calculate components for all players
-    components_data = get_components(match_data, components_to_use, **kwargs)
+    results = {}
+    for puuid, player in parsed['players'].items():
+        entry = ledger[puuid]
+        if entry['rounds'] == 0:
+            continue
+        components = {}
+        for name in component_names:
+            try:
+                calculator = get_component(name)
+                components[name] = calculator(
+                    player=player,
+                    match=match,
+                    damage_data=damage_data,
+                    economic_data={},
+                    xvx_data={},
+                    swing=ledger,
+                    parsed=parsed,
+                    **kwargs
+                )
+            except Exception as e:
+                warnings.warn(f"Failed to calculate {name} for {puuid}_{match_id}: {e}")
+                components[name] = 0.0
+        results[f"{puuid}_{match_id}"] = {'player': player, 'match_id': match_id, 'ledger': entry,
+                                          'components': components}
+    return results
 
-    # Calculate final ratings
-    ratings = {}
-
-    for player_key, player_components in components_data.items():
-        # Apply normalization
-        normalized_components = {}
-        weighted_components = {}
-
-        # Special handling for KillContrib and DeathContrib as a balanced pair
-        if 'KillContrib' in player_components and 'DeathContrib' in player_components:
-            kill_raw = player_components['KillContrib']
-            death_raw = player_components['DeathContrib']
-            
-            # Combine into net impact
-            net_impact = kill_raw + death_raw
-            
-            # Use KillContrib's normalization parameters for the net impact
-            if 'KillContrib' in normalization_params:
-                kill_mean = normalization_params['KillContrib']['mean']
-                kill_std = normalization_params['KillContrib']['std']
-                death_mean = normalization_params['DeathContrib']['mean']
-                
-                # Normalize the net impact
-                net_normalized = (net_impact - (kill_mean + death_mean)) / kill_std
-                normalized_components['KillContrib_norm'] = net_normalized / 2
-                normalized_components['DeathContrib_norm'] = net_normalized / 2
-                
-                # Apply weighting
-                if 'KillContrib' in weights:
-                    weighted_components['KillContrib_weighted'] = weights['KillContrib'] * normalized_components['KillContrib_norm']
-                if 'DeathContrib' in weights:
-                    weighted_components['DeathContrib_weighted'] = weights['DeathContrib'] * normalized_components['DeathContrib_norm']
-                
-                print(f"DEBUG: {player_key} - Kill: {kill_raw:.3f}, Death: {death_raw:.3f}, Net: {net_impact:.3f}, Net_norm: {net_normalized:.3f}")
-        
-        # Handle other components normally
-        for comp_name in components_to_use:
-            if comp_name not in ['KillContrib', 'DeathContrib']:  # Skip if already handled
-                if comp_name in player_components and comp_name in normalization_params:
-                    raw_value = player_components[comp_name]
-                    mean = normalization_params[comp_name]['mean']
-                    std = normalization_params[comp_name]['std']
-
-                    # Z-score normalization
-                    normalized = (raw_value - mean) / std
-                    normalized_components[f'{comp_name}_norm'] = normalized
-
-                    # Apply weighting
-                    if comp_name in weights:
-                        weighted = weights[comp_name] * normalized
-                        weighted_components[f'{comp_name}_weighted'] = weighted
-
-        # Calculate weighted sum
-        weighted_sum = sum(weighted_components.values())
-
-        # Apply scaling using values from normalization_params
-        final_rating_params = normalization_params.get('final_rating', {})
-        scaling_factor = final_rating_params.get('scaling_factor', 1.0)
-        base_rating = final_rating_params.get('base_rating', 0.0)
-        pre_normalized_rating = base_rating + scaling_factor * weighted_sum
-
-        # Apply final normalization to achieve mean=0, std=1
-        current_mean = final_rating_params.get('mean', 0.0)
-        current_std = final_rating_params.get('std', 1.0)
-        rating = (pre_normalized_rating - current_mean) / current_std
-
-        # Store results
-        ratings[player_key] = {
-            'rating': rating,
-            'components': player_components,
-            'normalized_components': normalized_components,
-            'weighted_components': weighted_components,
-            'weighted_sum': weighted_sum,
-            'pre_normalized_rating': pre_normalized_rating,
-            'scaling_factor': scaling_factor,
-            'base_rating': base_rating
-        }
-
-    return ratings
 
 def get_components(
     match_data: Union[str, Path, Dict, List[Dict]],
     component_names: Optional[Union[str, List[str]]] = None,
+    wp_model: Optional[WinProbabilityModel] = None,
     **kwargs
 ) -> Dict[str, Dict[str, Any]]:
     # Get individual component values for players in match data.
     # Args:
     #     match_data: Path to match data file/directory, or loaded match data
     #     component_names: Name(s) of components to calculate (optional)
+    #     wp_model: Custom win probability model (optional)
     #     **kwargs: Additional parameters for component calculations
     # Returns:
     #     Dict of player-match keys to component values
-
-    # Load match data
-    if isinstance(match_data, (str, Path)):
-        from ..data.loader import load_match_data
-        matches = load_match_data(match_data)
-    elif isinstance(match_data, dict):
-        matches = [match_data]
-    elif isinstance(match_data, list):
-        matches = match_data
-    else:
-        raise ValueError("match_data must be a file path, directory path, dict, or list of dicts")
-
-    # Determine components to calculate
     if component_names is None:
         component_names = list_components()
     elif isinstance(component_names, str):
         component_names = [component_names]
+    available = list_components()
+    for name in component_names:
+        if name not in available:
+            raise ValueError(f"Component '{name}' not available. Available: {available}")
 
-    # Validate components exist
-    available_components = list_components()
-    for comp_name in component_names:
-        if comp_name not in available_components:
-            raise ValueError(f"Component '{comp_name}' not available. Available: {available_components}")
-
-    # Calculate components
+    config = _resolve_config(kwargs.pop('config_path', None), kwargs)
+    wp_model = _resolve_model(config, wp_model)
     results = {}
-
-    for match in matches:
-        match_id = match['matchInfo']['matchId']
-
-        # Calculate required data (damage, economic, xvx)
-        damage_data = _extract_damage_data(match)
-        economic_data = _load_economic_data()
-        xvx_data = _load_xvx_data()
-
-        for player in match.get('players', []):
-            if player.get('isObserver', False):
-                continue
-
-            puuid = player['puuid']
-            player_key = f"{puuid}_{match_id}"
-
-            player_components = {}
-
-            for comp_name in component_names:
-                try:
-                    calculator = get_component(comp_name)
-                    component_value = calculator(
-                        player=player,
-                        match=match,
-                        damage_data=damage_data,
-                        economic_data=economic_data,
-                        xvx_data=xvx_data,
-                        **kwargs
-                    )
-                    player_components[comp_name] = component_value
-                except Exception as e:
-                    print(f"Warning: Failed to calculate {comp_name} for {player_key}: {e}")
-                    player_components[comp_name] = 0.0
-
-            results[player_key] = player_components
-
+    for match in _load_matches(match_data):
+        for key, row in _match_components(match, component_names, wp_model, config['credit'], **kwargs).items():
+            results[key] = row['components']
     return results
 
-def _extract_damage_data(match: Dict) -> Dict[str, int]:
-    # Extract damage data from match.
-    damage_data = {}
-    for player in match.get('players', []):
-        puuid = player['puuid']
-        total_damage = 0
 
-        # Sum damage from all rounds
-        for round_result in match.get('roundResults', []):
-            for player_stat in round_result.get('playerStats', []):
-                if player_stat['puuid'] == puuid:
-                    damage_events = player_stat.get('damage', [])
-                    if isinstance(damage_events, list):
-                        # Sum all damage amounts from the list
-                        for damage_event in damage_events:
-                            if isinstance(damage_event, dict) and 'damage' in damage_event:
-                                total_damage += damage_event['damage']
-                    elif isinstance(damage_events, (int, float)):
-                        # Handle case where damage is already a number
-                        total_damage += damage_events
+def _rate(row: Dict[str, Any], params: Dict[str, Any]) -> Dict[str, Any]:
+    entry = row['ledger']
+    features = rating_features(entry)
+    terms = rating_terms(features, params)
+    rating = params['intercept'] + sum(terms.values())
+    character_id = row['player'].get('characterId')
+    role = agent_role(character_id)
+    role_baseline = params['role_baselines'].get(role, 0.0) if role else 0.0
+    return {
+        'rating': rating,
+        'role_adjusted_rating': rating - role_baseline,
+        'round_swing': round_swing(entry) - params['swing_center'],
+        'swing_per_round': {name: features[name] for name in SWING_COMPONENTS},
+        'rating_breakdown': dict(terms, intercept=params['intercept']),
+        'components': row['components'],
+        'rounds_played': entry['rounds'],
+        'kills': entry['kills'],
+        'deaths': entry['deaths'],
+        'assists': entry['assists'],
+        'traded_deaths': entry['traded_deaths'],
+        'first_kills': entry['first_kills'],
+        'first_deaths': entry['first_deaths'],
+        'kast': entry['kast'] / entry['rounds'],
+        'adr': entry['damage_dealt'] / entry['rounds'],
+        'agent': agent_name(character_id),
+        'role': role,
+        'puuid': row['player']['puuid'],
+        'match_id': row['match_id'],
+    }
 
-        damage_data[puuid] = total_damage
-    return damage_data
 
-def _load_economic_data() -> Dict:
-    # Load economic data.
-    try:
-        import json
-        from pathlib import Path
-        data_path = Path(__file__).parent.parent.parent / 'data' / 'loadout_cost_analysis.json'
-        with open(data_path, 'r') as f:
-            data = json.load(f)
-        return data  # Return full data structure for components
-    except FileNotFoundError:
-        print(f"Warning: Could not load economic data from {data_path}")
-        return {}
+def calculate_rating(
+    match_data: Union[str, Path, Dict, List[Dict]],
+    components_to_use: Optional[List[str]] = None,
+    config_path: Optional[Union[str, Path]] = None,
+    wp_model: Optional[WinProbabilityModel] = None,
+    **kwargs
+) -> Dict[str, Any]:
+    # Calculate Open Soup Rating for players in match data.
+    # Args:
+    #     match_data: Path to match data file/directory, or loaded match data
+    #     components_to_use: Components to report alongside the rating (optional)
+    #     config_path: Path to custom config directory or file (optional)
+    #     wp_model: Custom win probability model (optional)
+    #     **kwargs: Additional parameters for component calculations
+    # Returns:
+    #     Dict of player-match keys to rating, swing breakdown and components
+    config = _resolve_config(config_path, kwargs)
+    if components_to_use is None:
+        components_to_use = list_components()
+    wp_model = _resolve_model(config, wp_model)
 
-def _load_xvx_data() -> Dict:
-    # Load XvX data.
-    try:
-        import json
-        from pathlib import Path
-        data_path = Path(__file__).parent.parent.parent / 'data' / 'xvx_data.json'
-        with open(data_path, 'r') as f:
-            data = json.load(f)
-        return data  # Return full data structure for components
-    except FileNotFoundError:
-        # Fallback to old location
-        data_path = Path(__file__).parent.parent.parent / 'xvx_breakdown_data.json'
-        with open(data_path, 'r') as f:
-            data = json.load(f)
-        return data  # Return full data structure for components
+    ratings = {}
+    for match in _load_matches(match_data):
+        for key, row in _match_components(match, components_to_use, wp_model, config['credit'], **kwargs).items():
+            ratings[key] = _rate(row, config['rating_params'])
+    return ratings
+
 
 def calculate_rating_with_player_info(
     match_data: Union[str, Path, Dict, List[Dict]],
-    weights: Optional[Dict[str, float]] = None,
-    normalization_params: Optional[Dict[str, Dict[str, float]]] = None,
     components_to_use: Optional[List[str]] = None,
     config_path: Optional[Union[str, Path]] = None,
+    wp_model: Optional[WinProbabilityModel] = None,
     **kwargs
 ) -> Dict[str, Any]:
-    # Calculate Open Soup Rating with detailed player information.
-    # Args:
-    #     match_data: Path to match data file/directory, or loaded match data
-    #     weights: Custom weights for components (optional)
-    #     normalization_params: Custom normalization parameters (optional)
-    #     components_to_use: List of components to include (optional)
-    #     config_path: Path to custom config directory (optional)
-    #     **kwargs: Additional parameters for component calculations
-    # Returns:
-    #     Dict containing ratings, component data, and player info for each player-match
-
-    # Load configuration
-    config = get_default_config()
-    if config_path:
-        config.update(load_config_data(config_path))
-
-    # Load match data
-    if isinstance(match_data, (str, Path)):
-        from ..data.loader import load_match_data
-        matches = load_match_data(match_data)
-    elif isinstance(match_data, dict):
-        matches = [match_data]
-    elif isinstance(match_data, list):
-        matches = match_data
-    else:
-        raise ValueError("match_data must be a file path, directory path, dict, or list of dicts")
-
-    # Validate match data
-    for match in matches:
-        validate_match_data(match)
-
-    # Load weights and normalization params
-    if weights is None:
-        weights = config.get('weights', {})
-    if normalization_params is None:
-        normalization_params = config.get('normalization_params', {})
-
-    # Determine components to use
-    if components_to_use is None:
-        components_to_use = list_components()
-
-    # Calculate components for all players
-    components_data = get_components(match_data, components_to_use, **kwargs)
-
-    # Calculate final ratings with player info
-    ratings = {}
-
+    # Same as calculate_rating, plus name, tag and box-score stats for each player.
+    matches = _load_matches(match_data)
+    ratings = calculate_rating(matches, components_to_use, config_path, wp_model, **kwargs)
+    players = {}
     for match in matches:
         match_id = match['matchInfo']['matchId']
-
         for player in match.get('players', []):
-            if player.get('isObserver', False):
-                continue
-
-            puuid = player['puuid']
-            player_key = f"{puuid}_{match_id}"
-
-            if player_key not in components_data:
-                continue
-
-            player_components = components_data[player_key]
-
-            # Apply normalization
-            normalized_components = {}
-            weighted_components = {}
-
-            # Special handling for KillContrib and DeathContrib as a balanced pair
-            if 'KillContrib' in player_components and 'DeathContrib' in player_components:
-                kill_raw = player_components['KillContrib']
-                death_raw = player_components['DeathContrib']
-                
-                # Combine into net impact
-                net_impact = kill_raw + death_raw
-                
-                # Use KillContrib's normalization parameters for the net impact
-                if 'KillContrib' in normalization_params:
-                    kill_mean = normalization_params['KillContrib']['mean']
-                    kill_std = normalization_params['KillContrib']['std']
-                    death_mean = normalization_params['DeathContrib']['mean']
-                    
-                    # Normalize the net impact
-                    net_normalized = (net_impact - (kill_mean + death_mean)) / kill_std
-                    normalized_components['KillContrib_norm'] = net_normalized / 2
-                    normalized_components['DeathContrib_norm'] = net_normalized / 2
-                    
-                    # Apply weighting
-                    if 'KillContrib' in weights:
-                        weighted_components['KillContrib_weighted'] = weights['KillContrib'] * normalized_components['KillContrib_norm']
-                    if 'DeathContrib' in weights:
-                        weighted_components['DeathContrib_weighted'] = weights['DeathContrib'] * normalized_components['DeathContrib_norm']
-            
-            # Handle other components normally
-            for comp_name in components_to_use:
-                if comp_name not in ['KillContrib', 'DeathContrib']:  # Skip if already handled
-                    if comp_name in player_components and comp_name in normalization_params:
-                        raw_value = player_components[comp_name]
-                        mean = normalization_params[comp_name]['mean']
-                        std = normalization_params[comp_name]['std']
-
-                        # Z-score normalization
-                        normalized = (raw_value - mean) / std
-                        normalized_components[f'{comp_name}_norm'] = normalized
-
-                        # Apply weighting
-                        if comp_name in weights:
-                            weighted = weights[comp_name] * normalized
-                            weighted_components[f'{comp_name}_weighted'] = weighted
-
-            # Calculate weighted sum
-            weighted_sum = sum(weighted_components.values())
-
-            # Apply scaling using values from normalization_params
-            final_rating_params = normalization_params.get('final_rating', {})
-            scaling_factor = final_rating_params.get('scaling_factor', 1.0)
-            base_rating = final_rating_params.get('base_rating', 0.0)
-            pre_normalized_rating = base_rating + scaling_factor * weighted_sum
-
-            # Apply final normalization to achieve mean=0, std=1
-            current_mean = final_rating_params.get('mean', 0.0)
-            current_std = final_rating_params.get('std', 1.0)
-            rating = (pre_normalized_rating - current_mean) / current_std
-
-            # Extract player information
-            player_stats = player.get('stats', {})
-            player_info = {
-                'name': player.get('gameName', 'Unknown'),
-                'tagline': player.get('tagLine', 'Unknown'),
-                'kills': player_stats.get('kills', 0),
-                'deaths': player_stats.get('deaths', 0),
-                'assists': player_stats.get('assists', 0),
-                'rounds_played': player_stats.get('roundsPlayed', 0)
-            }
-
-            # Store results with player info
-            ratings[player_key] = {
-                'rating': rating,
-                'player_info': player_info,
-                'components': player_components,
-                'normalized_components': normalized_components,
-                'weighted_components': weighted_components,
-                'weighted_sum': weighted_sum,
-                'pre_normalized_rating': pre_normalized_rating,
-                'scaling_factor': scaling_factor,
-                'base_rating': base_rating,
-                'match_id': match_id
-            }
-
+            players[f"{player['puuid']}_{match_id}"] = player
+    for key, result in ratings.items():
+        player = players[key]
+        stats = player.get('stats', {}) or {}
+        result['player_info'] = {
+            'name': player.get('gameName', 'Unknown'),
+            'tagline': player.get('tagLine', 'Unknown'),
+            'kills': stats.get('kills', 0),
+            'deaths': stats.get('deaths', 0),
+            'assists': stats.get('assists', 0),
+            'rounds_played': stats.get('roundsPlayed', 0),
+        }
     return ratings
+
+
+def aggregate_ratings(ratings: Dict[str, Any], config_path: Optional[Union[str, Path]] = None,
+                      role_adjusted: bool = False, interval: float = 0.9) -> Dict[str, Any]:
+    """
+    Combine per-match ratings into one rating per player, shrunk toward the
+    average in proportion to how few rounds they have played.
+
+    A single map is mostly noise; the shrinkage constant (prior_rounds) is the
+    number of rounds at which a player's own record and the population average
+    get equal weight. Returns {puuid: {...}} with the raw per-round average,
+    the shrunk rating and a credible interval.
+    """
+    params = _resolve_config(config_path, {})['rating_params']
+    sigma2 = params['shrinkage']['round_variance']
+    tau2 = params['shrinkage']['true_variance']
+    z = _normal_quantile(0.5 + interval / 2)
+
+    totals: Dict[str, Dict[str, Any]] = {}
+    for result in ratings.values():
+        value = result['role_adjusted_rating'] if role_adjusted else result['rating']
+        t = totals.setdefault(result['puuid'], {'rounds': 0, 'weighted': 0.0, 'maps': 0, 'roles': {}})
+        t['rounds'] += result['rounds_played']
+        t['weighted'] += value * result['rounds_played']
+        t['maps'] += 1
+        if result.get('role'):
+            t['roles'][result['role']] = t['roles'].get(result['role'], 0) + result['rounds_played']
+        if 'player_info' in result:
+            t['name'] = f"{result['player_info']['name']}#{result['player_info']['tagline']}"
+
+    out = {}
+    for puuid, t in totals.items():
+        n = t['rounds']
+        precision = n / sigma2 + 1.0 / tau2
+        shrunk = (t['weighted'] / sigma2) / precision
+        sd = math.sqrt(1.0 / precision)
+        out[puuid] = {
+            'name': t.get('name'),
+            'maps': t['maps'],
+            'rounds_played': n,
+            'raw_rating': t['weighted'] / n if n else 0.0,
+            'rating': shrunk,
+            'rating_low': shrunk - z * sd,
+            'rating_high': shrunk + z * sd,
+            'main_role': max(t['roles'], key=t['roles'].get) if t['roles'] else None,
+        }
+    return out
+
+
+def _normal_quantile(p: float) -> float:
+    return NormalDist().inv_cdf(p)
+
+
+def _extract_damage_data(match: Dict) -> Dict[str, int]:
+    # Total damage dealt by each player over the match.
+    damage_data: Dict[str, int] = {}
+    for round_result in match.get('roundResults', []) or []:
+        for player_stat in round_result.get('playerStats', []) or []:
+            puuid = player_stat['puuid']
+            for event in player_stat.get('damage', []) or []:
+                if isinstance(event, dict) and 'damage' in event:
+                    damage_data[puuid] = damage_data.get(puuid, 0) + event['damage']
+    return damage_data

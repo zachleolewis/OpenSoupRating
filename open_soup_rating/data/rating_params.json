@@ -1,0 +1,47 @@
+{
+  "rating_weights": {
+    "KillSwing": 0.0547,
+    "AssistSwing": 0.17529,
+    "DeathSwing": 0.18892,
+    "ObjectiveSwing": 0.28265,
+    "kills": 0.01599,
+    "deaths": -2.0383,
+    "damage_dealt": 4.16833,
+    "damage_taken": -3.8943
+  },
+  "intercept": 2.12693,
+  "swing_center": 0.8676,
+  "role_baselines": {
+    "Controller": -0.0738,
+    "Duelist": -0.0682,
+    "Initiator": 0.015,
+    "Sentinel": 0.1948
+  },
+  "shrinkage": {
+    "round_variance": 123.344,
+    "true_variance": 0.6261,
+    "prior_rounds": 197.0
+  },
+  "player_maps": 250860,
+  "players_used_for_weights": 4866,
+  "metadata": {
+    "description": "Rating weights, centring, role baselines and shrinkage",
+    "maps": 25086,
+    "states_fitted": 2011515,
+    "game_dates": [
+      "2024-01-23",
+      "2026-10-28"
+    ],
+    "patches": [
+      "8.00",
+      "13.08"
+    ],
+    "holdout": {
+      "states": 1610933,
+      "log_loss": 0.4523,
+      "brier": 0.1498,
+      "maps": 5018
+    },
+    "generated_at": "2026-11-01"
+  }
+}

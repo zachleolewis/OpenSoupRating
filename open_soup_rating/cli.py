@@ -7,8 +7,6 @@ import sys
 import argparse
 import json
 from pathlib import Path
-from typing import Optional, List
-
 import open_soup_rating as osr
 
 
@@ -21,7 +19,8 @@ def main():
 Examples:
   osr calculate match_data.json
   osr calculate match_data.json --output ratings.json
-  osr calculate match_data.json --components KillContrib DeathContrib
+  osr calculate matches/ --aggregate --pretty
+  osr calculate match_data.json --components KillSwing DeathSwing
   osr list-components
         """
     )
@@ -30,11 +29,13 @@ Examples:
     
     # Calculate ratings command
     calc_parser = subparsers.add_parser('calculate', help='Calculate player ratings from match data')
-    calc_parser.add_argument('input_file', help='Path to match data JSON file')
+    calc_parser.add_argument('input_file', help='Path to a match JSON file (.json/.json.gz) or a directory of them')
     calc_parser.add_argument('-o', '--output', help='Output file path (default: stdout)')
-    calc_parser.add_argument('-w', '--weights', help='Path to custom weights JSON file')
-    calc_parser.add_argument('-n', '--normalization', help='Path to custom normalization parameters JSON file')
-    calc_parser.add_argument('-c', '--components', nargs='+', help='Specific components to use')
+    calc_parser.add_argument('-c', '--components', nargs='+', help='Components to report alongside the rating')
+    calc_parser.add_argument('-a', '--aggregate', action='store_true',
+                             help='Combine all matches into one shrunk rating per player')
+    calc_parser.add_argument('--role-adjusted', action='store_true',
+                             help='With --aggregate, rate players against their role baseline')
     calc_parser.add_argument('--config', help='Path to configuration directory')
     calc_parser.add_argument('--pretty', action='store_true', help='Pretty print JSON output')
     
@@ -71,34 +72,16 @@ def handle_calculate(args) -> int:
         print(f"Error: Input file '{args.input_file}' not found.", file=sys.stderr)
         return 1
     
-    # Load optional configuration files
-    weights = None
-    if args.weights:
-        try:
-            with open(args.weights, 'r') as f:
-                weights = json.load(f)
-        except Exception as e:
-            print(f"Error loading weights file: {e}", file=sys.stderr)
-            return 1
-    
-    normalization_params = None
-    if args.normalization:
-        try:
-            with open(args.normalization, 'r') as f:
-                normalization_params = json.load(f)
-        except Exception as e:
-            print(f"Error loading normalization file: {e}", file=sys.stderr)
-            return 1
-    
     try:
         # Calculate ratings
-        result = osr.calculate_rating(
+        result = osr.calculate_rating_with_player_info(
             match_data=args.input_file,
-            weights=weights,
-            normalization_params=normalization_params,
             components_to_use=args.components,
             config_path=args.config
         )
+        if args.aggregate:
+            result = osr.aggregate_ratings(result, config_path=args.config, role_adjusted=args.role_adjusted)
+            result = dict(sorted(result.items(), key=lambda kv: kv[1]['rating'], reverse=True))
         
         # Format output
         output_data = result

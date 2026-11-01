@@ -44,24 +44,7 @@ def validate_component_data(component_data: Dict[str, Any]) -> None:
         raise ValueError("Component data must be a dictionary")
 
     # Check for required component keys
-    expected_components = ['KillContrib', 'DeathContrib', 'APR', 'ADRa']
+    expected_components = ['KillSwing', 'AssistSwing', 'DeathSwing', 'ObjectiveSwing']
     for comp in expected_components:
         if comp not in component_data:
             print(f"Warning: Missing component {comp}")
-
-def validate_weights(weights: Dict[str, float]) -> None:
-    # Validate weights dictionary.
-    # Args:
-    #     weights: Weights dictionary
-    # Raises:
-    #     ValueError: If weights are invalid
-    if not isinstance(weights, dict):
-        raise ValueError("Weights must be a dictionary")
-
-    total_weight = sum(weights.values())
-    if not (0.99 <= total_weight <= 1.01):  # Allow small floating point errors
-        raise ValueError(f"Weights must sum to 1.0, got {total_weight}")
-
-    for comp, weight in weights.items():
-        if not (0 <= weight <= 1):
-            raise ValueError(f"Weight for {comp} must be between 0 and 1, got {weight}")

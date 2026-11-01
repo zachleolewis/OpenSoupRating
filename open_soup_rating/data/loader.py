@@ -1,12 +1,19 @@
 # Data Loading Utilities
 
+import gzip
 import json
-import os
 from pathlib import Path
 from typing import Dict, List, Any, Union
 
+
+def _read_json(file_path: Path) -> Any:
+    opener = gzip.open if file_path.name.endswith('.gz') else open
+    with opener(file_path, 'rt', encoding='utf-8') as f:
+        return json.load(f)
+
+
 def load_match_data(data_path: Union[str, Path], max_matches: int = None) -> List[Dict[str, Any]]:
-    # Load match data from JSON files.
+    # Load match data from JSON files (.json or .json.gz).
     # Args:
     #     data_path: Path to directory containing match JSON files or single file
     #     max_matches: Maximum number of matches to load (optional)
@@ -15,24 +22,22 @@ def load_match_data(data_path: Union[str, Path], max_matches: int = None) -> Lis
     data_path = Path(data_path)
 
     if data_path.is_file():
-        # Single file
-        with open(data_path, 'r') as f:
-            return [json.load(f)]
+        return [_read_json(data_path)]
     elif data_path.is_dir():
         # Directory of files (search recursively)
         matches = []
-        for file_path in data_path.rglob('*.json'):  # Use rglob for recursive search
+        files = sorted(p for p in data_path.rglob('*') if p.name.endswith(('.json', '.json.gz')))
+        for file_path in files:
             if max_matches and len(matches) >= max_matches:
                 break
             try:
-                with open(file_path, 'r') as f:
-                    match_data = json.load(f)
-                    matches.append(match_data)
+                matches.append(_read_json(file_path))
             except Exception as e:
                 print(f"Warning: Failed to load {file_path}: {e}")
         return matches
     else:
         raise ValueError(f"Path {data_path} does not exist")
+
 
 def load_config_data(config_path: Union[str, Path]) -> Dict[str, Any]:
     # Load configuration data from JSON files.
@@ -44,21 +49,19 @@ def load_config_data(config_path: Union[str, Path]) -> Dict[str, Any]:
     config = {}
 
     if config_path.is_file():
-        with open(config_path, 'r') as f:
-            config.update(json.load(f))
+        config.update(_read_json(config_path))
     elif config_path.is_dir():
         # Load all JSON files in directory
         for file_path in config_path.glob('*.json'):
             try:
-                with open(file_path, 'r') as f:
-                    file_config = json.load(f)
-                    config.update(file_config)
+                config.update(_read_json(file_path))
             except Exception as e:
                 print(f"Warning: Failed to load config {file_path}: {e}")
     else:
         raise ValueError(f"Config path {config_path} does not exist")
 
     return config
+
 
 def save_data(data: Any, file_path: Union[str, Path], indent: int = 2) -> None:
     # Save data to JSON file.
@@ -69,5 +72,5 @@ def save_data(data: Any, file_path: Union[str, Path], indent: int = 2) -> None:
     file_path = Path(file_path)
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(file_path, 'w') as f:
-        json.dump(data, f, indent=indent)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=indent, ensure_ascii=False)
